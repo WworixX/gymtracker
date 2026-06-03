@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getStreakDays, calcVolume } from '@/lib/utils';
-import type { Exercise, WeightLog, PRRecord } from '@/types';
+import type { WeightLog, PRRecord, Exercise } from '@/types';
 
 interface DashboardData {
   streak: number;
@@ -13,6 +13,9 @@ interface DashboardData {
   volumeByMuscle: Record<string, number>;
   loading: boolean;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyWorkoutExercise = any;
 
 export function useDashboard() {
   const [data, setData] = useState<DashboardData>({
@@ -55,35 +58,36 @@ export function useDashboard() {
           .limit(7),
       ]);
 
-      const workouts = workoutsRes.data ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const workouts: any[] = workoutsRes.data ?? [];
       const weightLogs = (weightRes.data ?? []) as WeightLog[];
-      const streak = getStreakDays(workouts.map((w) => w.started_at));
+      const streak = getStreakDays(workouts.map((w) => w.started_at as string));
 
       let lastWorkout = null;
       if (workouts.length > 0) {
         const lw = workouts[0];
-        const allSets = lw.workout_exercises?.flatMap((we: { sets: Array<{ weight: number; reps: number }> }) => we.sets) ?? [];
+        const allSets = (lw.workout_exercises ?? []).flatMap((we: AnyWorkoutExercise) => (we.sets ?? []) as Array<{ weight: number; reps: number }>);
         lastWorkout = {
-          name: lw.name ?? 'Séance sans titre',
-          date: lw.started_at,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          exercises: lw.workout_exercises?.map((we: any) => we.exercise?.name ?? '') ?? [],
+          name: (lw.name as string) ?? 'Séance sans titre',
+          date: lw.started_at as string,
+          exercises: (lw.workout_exercises ?? []).map((we: AnyWorkoutExercise) => (we.exercise?.name ?? '') as string),
           totalVolume: calcVolume(allSets),
         };
       }
 
       const prMap = new Map<string, PRRecord>();
       for (const workout of workouts) {
-        for (const we of workout.workout_exercises ?? []) {
+        for (const we of (workout.workout_exercises ?? []) as AnyWorkoutExercise[]) {
           if (!we.exercise) continue;
-          for (const s of we.sets ?? []) {
-            const existing = prMap.get(we.exercise.id);
+          const ex = we.exercise as Exercise;
+          for (const s of (we.sets ?? []) as Array<{ weight: number; reps: number }>) {
+            const existing = prMap.get(ex.id);
             if (!existing || s.weight > existing.weight) {
-              prMap.set(we.exercise.id, {
-                exercise: we.exercise as Exercise,
+              prMap.set(ex.id, {
+                exercise: ex,
                 weight: s.weight,
                 reps: s.reps,
-                achievedAt: workout.started_at,
+                achievedAt: workout.started_at as string,
               });
             }
           }
@@ -92,10 +96,10 @@ export function useDashboard() {
 
       const volumeByMuscle: Record<string, number> = {};
       for (const workout of workouts) {
-        for (const we of workout.workout_exercises ?? []) {
+        for (const we of (workout.workout_exercises ?? []) as AnyWorkoutExercise[]) {
           if (!we.exercise) continue;
           const mg = (we.exercise as Exercise).muscle_group;
-          const vol = calcVolume(we.sets ?? []);
+          const vol = calcVolume((we.sets ?? []) as Array<{ weight: number; reps: number }>);
           volumeByMuscle[mg] = (volumeByMuscle[mg] ?? 0) + vol;
         }
       }
