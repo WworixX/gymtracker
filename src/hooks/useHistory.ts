@@ -36,7 +36,7 @@ export function useHistory() {
     const mapped: WorkoutHistoryItem[] = (data ?? []).map((w: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const exercises = (w.workout_exercises ?? []).map((we: any) => ({ exercise: we.exercise as Exercise, sets: (we.sets ?? []) as Set[] }));
-      const allSets = exercises.flatMap((e) => e.sets);
+      const allSets = exercises.flatMap((e: { exercise: Exercise; sets: Set[] }) => e.sets);
       return { ...w, exercises, totalVolume: calcVolume(allSets), totalSets: allSets.length };
     });
 
