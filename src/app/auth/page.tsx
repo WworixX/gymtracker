@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Dumbbell, Eye, EyeOff } from 'lucide-react';
+import { Dumbbell, Eye, EyeOff, UserX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
@@ -21,8 +21,23 @@ export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [guestLoading, setGuestLoading] = useState(false);
   const router = useRouter();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const continueAsGuest = async () => {
+    setGuestLoading(true);
+    setError('');
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError('Connexion invité impossible. Active "Allow anonymous sign-ins" dans Supabase > Authentication > Settings.');
+      setGuestLoading(false);
+      return;
+    }
+    router.push('/dashboard');
+    router.refresh();
+  };
 
   const onSubmit = async (data: FormData) => {
     setError('');
@@ -100,6 +115,25 @@ export default function AuthPage() {
             {mode === 'login' ? 'S\'inscrire' : 'Se connecter'}
           </button>
         </p>
+
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-text-muted text-xs font-mono">ou</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <button
+          onClick={continueAsGuest}
+          disabled={guestLoading}
+          className="mt-4 w-full flex items-center justify-center gap-2 h-11 border border-border rounded-lg text-text-muted hover:text-text-secondary hover:border-border-active transition-colors text-sm font-mono disabled:opacity-40"
+        >
+          {guestLoading ? (
+            <span className="w-3 h-3 border-2 border-border border-t-text-muted rounded-full animate-spin" />
+          ) : (
+            <UserX size={14} />
+          )}
+          Continuer sans compte
+        </button>
       </div>
     </div>
   );
