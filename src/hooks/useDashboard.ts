@@ -66,7 +66,8 @@ export function useDashboard() {
         lastWorkout = {
           name: lw.name ?? 'Séance sans titre',
           date: lw.started_at,
-          exercises: lw.workout_exercises?.map((we: { exercise: { name: string } | null }) => we.exercise?.name ?? '') ?? [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          exercises: lw.workout_exercises?.map((we: any) => we.exercise?.name ?? '') ?? [],
           totalVolume: calcVolume(allSets),
         };
       }
