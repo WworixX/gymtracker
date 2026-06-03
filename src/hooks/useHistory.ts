@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { calcVolume } from '@/lib/utils';
-import type { WorkoutHistoryItem } from '@/types';
+import type { WorkoutHistoryItem, Exercise, Set } from '@/types';
 
 const PAGE_SIZE = 20;
 
@@ -32,11 +32,10 @@ export function useHistory() {
       .order('started_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
 
-    const mapped: WorkoutHistoryItem[] = (data ?? []).map((w) => {
-      const exercises = (w.workout_exercises ?? []).map((we: {
-        exercise: WorkoutHistoryItem['exercises'][number]['exercise'] | null;
-        sets: WorkoutHistoryItem['exercises'][number]['sets'];
-      }) => ({ exercise: we.exercise!, sets: we.sets ?? [] }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapped: WorkoutHistoryItem[] = (data ?? []).map((w: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const exercises = (w.workout_exercises ?? []).map((we: any) => ({ exercise: we.exercise as Exercise, sets: (we.sets ?? []) as Set[] }));
       const allSets = exercises.flatMap((e) => e.sets);
       return { ...w, exercises, totalVolume: calcVolume(allSets), totalSets: allSets.length };
     });

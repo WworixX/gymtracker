@@ -42,8 +42,10 @@ export function useProgress(exerciseId: string | null, range: TimeRange) {
         .order('workout.started_at', { ascending: true });
 
       const pointsByDate = new Map<string, ProgressPoint>();
-      for (const we of weData ?? []) {
-        const workout = we.workout as { started_at: string } | null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const we of (weData ?? []) as any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const workout = (Array.isArray(we.workout) ? we.workout[0] : we.workout) as { started_at: string } | null;
         if (!workout) continue;
         const date = workout.started_at.split('T')[0];
         const sets = (we.sets ?? []) as Array<{ weight: number; reps: number }>;
