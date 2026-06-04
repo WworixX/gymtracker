@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Zap, Flame, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -10,6 +11,8 @@ import { WeightSparkline } from '@/components/features/dashboard/WeightSparkline
 import { VolumeChart } from '@/components/features/dashboard/VolumeChart';
 import { RecentPRs } from '@/components/features/dashboard/RecentPRs';
 import { useDashboard } from '@/hooks/useDashboard';
+import { useWorkoutStore } from '@/stores/workout-store';
+import { useWorkoutActions } from '@/hooks/useWorkout';
 import { formatDate } from '@/lib/utils';
 
 const fadeUp = {
@@ -19,6 +22,29 @@ const fadeUp = {
 
 export default function DashboardPage() {
   const { streak, lastWorkout, recentPRs, weightLogs, volumeByMuscle, loading } = useDashboard();
+  const { startWorkout, activeWorkout } = useWorkoutStore();
+  const { createWorkout } = useWorkoutActions();
+  const [starting, setStarting] = useState(false);
+  const router = useRouter();
+
+  const handleStart = async () => {
+    // Si séance déjà en cours, y retourner
+    if (activeWorkout) {
+      router.push(`/workout/${activeWorkout.id}`);
+      return;
+    }
+    setStarting(true);
+    try {
+      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const name = `Séance du ${today}`;
+      const workout = await createWorkout(name);
+      startWorkout(workout.id, name);
+      router.push(`/workout/${workout.id}`);
+    } catch (e) {
+      console.error(e);
+      setStarting(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-4 flex flex-col gap-4 max-w-2xl mx-auto">{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</div>;
@@ -27,9 +53,16 @@ export default function DashboardPage() {
   return (
     <div className="p-4 flex flex-col gap-4 max-w-2xl mx-auto">
       <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
-        <Link href="/workout/new">
-          <Button fullWidth size="lg" className="h-14 text-base"><Zap size={18} strokeWidth={2.5} />Démarrer une séance</Button>
-        </Link>
+        <Button
+          fullWidth
+          size="lg"
+          className="h-14 text-base"
+          loading={starting}
+          onClick={handleStart}
+        >
+          <Zap size={18} strokeWidth={2.5} />
+          {activeWorkout ? 'Reprendre la séance' : 'Démarrer une séance'}
+        </Button>
       </motion.div>
 
       <motion.div custom={1} variants={fadeUp} initial="hidden" animate="show">

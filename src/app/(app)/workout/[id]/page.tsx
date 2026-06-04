@@ -23,6 +23,15 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
   const [elapsed, setElapsed] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [finishModalOpen, setFinishModalOpen] = useState(false);
+
+  // Auto-open picker when workout has no exercises yet
+  useEffect(() => {
+    if (activeWorkout && activeWorkout.id === params.id && activeWorkout.exercises.length === 0) {
+      setPickerOpen(true);
+    }
+  // Run once on mount only
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [finishing, setFinishing] = useState(false);
 
   useEffect(() => {
