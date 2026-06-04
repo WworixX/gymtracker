@@ -30,14 +30,14 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   return createPortal(
     <AnimatePresence>
       {open && (
-        <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <motion.div
-            className="fixed inset-0 bg-black/70 z-40"
+            className="absolute inset-0 bg-black/70"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.div
-            className={cn('fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-bg-elevated border border-border rounded-xl p-5 z-50 max-h-[85vh] overflow-y-auto', className)}
+            className={cn('relative w-full max-w-md bg-bg-elevated border border-border rounded-xl p-5 max-h-[85vh] overflow-y-auto', className)}
             initial={{ opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -51,7 +51,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
             )}
             {children}
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>,
     document.body
