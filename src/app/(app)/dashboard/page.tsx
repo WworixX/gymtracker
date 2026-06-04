@@ -48,7 +48,12 @@ export default function DashboardPage() {
       startWorkout(workout.id, name);
       router.push(`/workout/${workout.id}`);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Erreur inconnue';
+      let msg = 'Erreur inconnue';
+      if (e instanceof Error) msg = e.message;
+      else if (e && typeof e === 'object') {
+        const obj = e as { message?: string; code?: string; details?: string; hint?: string };
+        msg = obj.message || obj.details || obj.hint || obj.code || JSON.stringify(e);
+      } else if (typeof e === 'string') msg = e;
       setStartError(`Impossible de démarrer : ${msg}`);
       setStarting(false);
     }
