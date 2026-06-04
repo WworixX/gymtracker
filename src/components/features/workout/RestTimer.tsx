@@ -1,14 +1,10 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { Button } from '@/components/ui/Button';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { formatDuration } from '@/lib/utils';
-
-const RADIUS = 54;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function playBeep(frequency = 880) {
   try {
@@ -18,10 +14,10 @@ function playBeep(frequency = 880) {
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.25, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
     osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.4);
+    osc.stop(ctx.currentTime + 0.3);
   } catch {}
 }
 
@@ -37,40 +33,60 @@ export function RestTimer() {
 
   useEffect(() => {
     if (restTimer.active && restTimer.secondsLeft === 0 && prevSeconds.current > 0) playBeep(660);
-    if (restTimer.active && restTimer.secondsLeft === 10 && prevSeconds.current === 11) playBeep(880);
+    if (restTimer.active && restTimer.secondsLeft <= 10 && prevSeconds.current === restTimer.secondsLeft + 1) playBeep(880);
     prevSeconds.current = restTimer.secondsLeft;
   }, [restTimer]);
 
   const progress = restTimer.totalSeconds > 0 ? restTimer.secondsLeft / restTimer.totalSeconds : 0;
-  const offset = CIRCUMFERENCE * (1 - progress);
-  const timerColor = restTimer.secondsLeft <= 10 ? '#ff4545' : restTimer.secondsLeft <= 30 ? '#f59e0b' : '#c8f542';
+
+  const color =
+    restTimer.secondsLeft <= 10 ? '#ff4545' :
+    restTimer.secondsLeft <= 30 ? '#f59e0b' :
+    '#c8f542';
 
   return (
-    <BottomSheet open={restTimer.active} blocking className="pb-8">
-      <div className="flex flex-col items-center px-6 pt-4 pb-6 gap-6">
-        <p className="text-xs font-mono uppercase tracking-widest text-text-secondary">Temps de repos</p>
-        <div className="relative flex items-center justify-center">
-          <svg width="140" height="140" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="70" cy="70" r={RADIUS} fill="none" stroke="#2a2a2a" strokeWidth="6" />
-            <motion.circle
-              cx="70" cy="70" r={RADIUS} fill="none"
-              stroke={timerColor} strokeWidth="6" strokeLinecap="round"
-              strokeDasharray={CIRCUMFERENCE} strokeDashoffset={offset}
-              transition={{ duration: 0.9, ease: 'linear' }}
-              style={{ filter: `drop-shadow(0 0 6px ${timerColor}60)` }}
-            />
-          </svg>
-          <div className="absolute flex flex-col items-center">
+    <AnimatePresence>
+      {restTimer.active && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 md:bottom-6"
+        >
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-bg-elevated border border-border shadow-lg shadow-black/40 backdrop-blur">
+            {/* Progress bar */}
+            <div className="relative w-28 h-1.5 bg-border rounded-full overflow-hidden">
+              <motion.div
+                className="absolute inset-y-0 left-0 rounded-full"
+                style={{ backgroundColor: color }}
+                animate={{ width: `${progress * 100}%` }}
+                transition={{ duration: 0.9, ease: 'linear' }}
+              />
+            </div>
+
+            {/* Countdown */}
             <span
-              className="font-mono font-bold leading-none"
-              style={{ fontSize: '64px', color: timerColor, letterSpacing: '-2px', transition: 'color 0.5s' }}
+              className="font-mono text-sm font-bold tabular-nums w-10 text-center"
+              style={{ color }}
             >
               {formatDuration(restTimer.secondsLeft)}
             </span>
+
+            <span className="text-text-muted text-xs font-mono uppercase tracking-wider hidden sm:inline">
+              repos
+            </span>
+
+            {/* Skip */}
+            <button
+              onClick={skipRest}
+              className="w-6 h-6 flex items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-bg-overlay transition-colors"
+            >
+              <X size={13} />
+            </button>
           </div>
-        </div>
-        <Button variant="secondary" onClick={skipRest} size="lg">Passer</Button>
-      </div>
-    </BottomSheet>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
