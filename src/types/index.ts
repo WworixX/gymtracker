@@ -160,3 +160,20 @@ export interface PRRecord {
   reps: number;
   achievedAt: string;
 }
+
+export interface TemplateExercise {
+  id: string;
+  template_id: string;
+  exercise_id: string;
+  order_index: number;
+  target_sets: number;
+  exercise?: Exercise;
+}
+
+export interface Template {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  exercises: Array<{ exercise: Exercise; target_sets: number }>;
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Dumbbell, Trophy, Check, Scale, TrendingUp, Flame, RotateCcw } from 'lucide-react';
+import { Zap, Dumbbell, Trophy, Check, Scale, TrendingUp, Flame } from 'lucide-react';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +11,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { WeightSparkline } from '@/components/features/dashboard/WeightSparkline';
 import { VolumeChart } from '@/components/features/dashboard/VolumeChart';
 import { RecentPRs } from '@/components/features/dashboard/RecentPRs';
+import { TemplatesSection } from '@/components/features/dashboard/TemplatesSection';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { useWorkoutActions } from '@/hooks/useWorkout';
@@ -47,13 +48,12 @@ function StatCard({ label, value, unit, icon, accent }: { label: string; value: 
 
 export default function DashboardPage() {
   const { totalWorkouts, lastWorkout, recentPRs, volumeByMuscle, loading } = useDashboard();
-  const { startWorkout, activeWorkout, addExercise } = useWorkoutStore();
-  const { createWorkout, addExerciseToWorkout, getLastWorkoutExercises } = useWorkoutActions();
+  const { startWorkout, activeWorkout } = useWorkoutStore();
+  const { createWorkout } = useWorkoutActions();
   const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
   const { user } = useAuth();
 
   const [starting, setStarting] = useState(false);
-  const [repeating, setRepeating] = useState(false);
   const [startError, setStartError] = useState('');
   const [weightInput, setWeightInput] = useState('');
   const [weightSaved, setWeightSaved] = useState(false);
@@ -79,36 +79,6 @@ export default function DashboardPage() {
       }
       setStartError(`Impossible de démarrer : ${msg}`);
       setStarting(false);
-    }
-  };
-
-  const handleRepeat = async () => {
-    setStartError('');
-    if (activeWorkout) { router.push(`/workout/${activeWorkout.id}`); return; }
-    setRepeating(true);
-    try {
-      const exercises = await getLastWorkoutExercises();
-      const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-      const name = `Séance du ${today}`;
-      const workout = await createWorkout(name);
-      startWorkout(workout.id, name);
-      // Pré-remplit avec les exercices de la dernière séance
-      let i = 0;
-      for (const { exercise, lastSession } of exercises) {
-        const we = await addExerciseToWorkout(workout.id, exercise.id, i);
-        addExercise(exercise, we.id, lastSession);
-        i++;
-      }
-      router.push(`/workout/${workout.id}`);
-    } catch (e) {
-      let msg = 'Erreur inconnue';
-      if (e instanceof Error) msg = e.message;
-      else if (e && typeof e === 'object') {
-        const obj = e as { message?: string; code?: string; details?: string; hint?: string };
-        msg = obj.message || obj.details || obj.hint || obj.code || JSON.stringify(e);
-      }
-      setStartError(`Impossible de répéter : ${msg}`);
-      setRepeating(false);
     }
   };
 
@@ -153,12 +123,6 @@ export default function DashboardPage() {
           <Zap size={18} strokeWidth={2.5} />
           {activeWorkout ? 'Reprendre la séance' : 'Démarrer une séance'}
         </Button>
-        {!activeWorkout && lastWorkout && (
-          <Button fullWidth variant="secondary" loading={repeating} onClick={handleRepeat}>
-            <RotateCcw size={15} />
-            Répéter la dernière séance
-          </Button>
-        )}
         {startError && (
           <p className="mt-1 text-xs text-danger font-mono bg-danger/10 border border-danger/20 rounded-[10px] px-3 py-2">{startError}</p>
         )}
@@ -207,6 +171,11 @@ export default function DashboardPage() {
           </div>
           {weightLogs.length > 1 && <div className="mt-3"><WeightSparkline logs={weightLogs} /></div>}
         </Card>
+      </motion.div>
+
+      {/* Programmes */}
+      <motion.div custom={4} variants={fadeUp} initial="hidden" animate="show">
+        <TemplatesSection />
       </motion.div>
 
       {/* Dernière séance */}
