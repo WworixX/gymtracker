@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ChevronDown } from 'lucide-react';
+import { Plus, ChevronDown, Timer } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { SetRow } from './SetRow';
 import { useWorkoutStore } from '@/stores/workout-store';
@@ -13,6 +13,8 @@ import confetti from 'canvas-confetti';
 
 export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExercise; userId: string }) {
   const [notesOpen, setNotesOpen] = useState(false);
+  const [restSeconds, setRestSeconds] = useState(item.exercise.rest_seconds ?? 120);
+  const [editingRest, setEditingRest] = useState(false);
   const { addSet, updateSet, completeSet, deleteSet, markSetSaved, updateExerciseNotes, startRestTimer } = useWorkoutStore();
   const { saveSet, deleteSet: deleteSetDB, checkPR } = useWorkoutActions();
 
@@ -20,7 +22,7 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
     const s = item.sets.find((s) => s.tempId === tempId);
     if (!s) return;
     completeSet(item.workoutExerciseId, tempId);
-    startRestTimer(item.exercise.rest_seconds);
+    startRestTimer(restSeconds);
     try {
       const saved = await saveSet(item.workoutExerciseId, s.set_number, s.weight, s.reps);
       markSetSaved(item.workoutExerciseId, tempId, saved.id);
@@ -35,52 +37,95 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
     deleteSet(item.workoutExerciseId, tempId);
   };
 
+  const completedCount = item.sets.filter((s) => s.completed).length;
+
   return (
-    <div className="bg-bg-surface border border-border rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-semibold text-text-primary truncate">{item.exercise.name}</span>
-          <Badge variant="muscle">{item.exercise.muscle_group}</Badge>
+    <div className="bg-bg-surface border border-border rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="min-w-0">
+            <span className="text-base font-semibold text-text-primary">{item.exercise.name}</span>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="muscle">{item.exercise.muscle_group}</Badge>
+              {completedCount > 0 && (
+                <span className="text-[10px] font-mono text-success uppercase tracking-wider">
+                  {completedCount} série{completedCount > 1 ? 's' : ''} ✓
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Rest time — éditable inline */}
+          <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+            <Timer size={12} className="text-text-muted" />
+            {editingRest ? (
+              <input
+                type="number"
+                inputMode="numeric"
+                value={restSeconds}
+                onChange={(e) => setRestSeconds(Math.max(10, parseInt(e.target.value) || 120))}
+                onBlur={() => setEditingRest(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setEditingRest(false)}
+                autoFocus
+                className="w-14 h-6 text-center bg-bg-overlay border border-accent rounded text-xs font-mono text-accent focus:outline-none"
+              />
+            ) : (
+              <button
+                onClick={() => setEditingRest(true)}
+                className="text-xs font-mono text-text-muted hover:text-accent transition-colors underline-offset-2 hover:underline"
+              >
+                {restSeconds}s
+              </button>
+            )}
+          </div>
         </div>
-        <span className="text-xs font-mono text-text-muted shrink-0 ml-2">{item.exercise.rest_seconds}s</span>
+
+        {item.lastSession && (
+          <div className="text-xs font-mono text-text-muted bg-bg-base/60 rounded-lg px-3 py-1.5">
+            Dernière fois : <span className="text-text-secondary">{item.lastSession.weight} kg × {item.lastSession.reps} reps</span>
+          </div>
+        )}
       </div>
-      {item.lastSession && (
-        <div className="px-4 py-1.5 bg-bg-base/50 border-b border-border/50">
-          <p className="text-xs font-mono text-text-muted">Dernière fois: {item.lastSession.weight}kg × {item.lastSession.reps}</p>
-        </div>
-      )}
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-4 mb-2 px-3">
-          <span className="w-5 text-[10px] font-mono uppercase text-text-muted">SET</span>
-          <span className="w-16 text-[10px] font-mono uppercase text-text-muted text-center">KG</span>
-          <span className="text-[10px] font-mono uppercase text-text-muted">×</span>
-          <span className="w-12 text-[10px] font-mono uppercase text-text-muted text-center">REPS</span>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          {item.sets.map((s) => (
-            <SetRow
-              key={s.tempId}
-              set={s}
-              onUpdate={(field, value) => updateSet(item.workoutExerciseId, s.tempId, field, value)}
-              onComplete={() => handleComplete(s.tempId)}
-              onDelete={() => handleDelete(s.tempId)}
-            />
-          ))}
-        </div>
+
+      {/* Sets */}
+      <div className="px-4 pb-3 flex flex-col gap-2">
+        {item.sets.map((s) => (
+          <SetRow
+            key={s.tempId}
+            set={s}
+            onUpdate={(field, value) => updateSet(item.workoutExerciseId, s.tempId, field, value)}
+            onComplete={() => handleComplete(s.tempId)}
+            onDelete={() => handleDelete(s.tempId)}
+          />
+        ))}
+
+        {/* Add set */}
         <button
           onClick={() => addSet(item.workoutExerciseId)}
-          className="mt-2 w-full flex items-center justify-center gap-1.5 h-8 text-xs font-mono text-text-muted hover:text-accent border border-dashed border-border hover:border-accent/40 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 h-10 text-xs font-mono text-text-muted hover:text-accent border border-dashed border-border hover:border-accent/40 rounded-xl transition-colors mt-1"
         >
-          <Plus size={12} /> Série
+          <Plus size={13} /> Ajouter une série
         </button>
-        <div className="mt-2">
-          <button onClick={() => setNotesOpen(!notesOpen)} className="flex items-center gap-1 text-[10px] font-mono uppercase text-text-muted hover:text-text-secondary transition-colors">
+
+        {/* Notes collapsible */}
+        <div>
+          <button
+            onClick={() => setNotesOpen(!notesOpen)}
+            className="flex items-center gap-1 text-[10px] font-mono uppercase text-text-muted hover:text-text-secondary transition-colors mt-1"
+          >
             <ChevronDown size={12} className={cn('transition-transform', notesOpen && 'rotate-180')} />
             Notes
           </button>
           <AnimatePresence>
             {notesOpen && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
                 <textarea
                   value={item.notes}
                   onChange={(e) => updateExerciseNotes(item.workoutExerciseId, e.target.value)}
