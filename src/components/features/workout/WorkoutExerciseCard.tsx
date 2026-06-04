@@ -88,11 +88,6 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
           </div>
         </div>
 
-        {item.lastSession && (
-          <div className="text-xs font-mono text-text-muted bg-bg-base/60 rounded-lg px-3 py-1.5">
-            Dernière fois : <span className="text-text-secondary">{item.lastSession.weight} kg × {item.lastSession.reps} reps</span>
-          </div>
-        )}
       </div>
 
       {/* Sets */}
