@@ -10,12 +10,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { passwordStrength } from '@/lib/utils';
 
 const schema = z.object({
   email: z.string().email('Email invalide'),
-  password: z.string().min(6, '6 caractères minimum'),
+  password: z.string().min(8, '8 caractères minimum'),
 });
 type FormData = z.infer<typeof schema>;
+
+const STRENGTH_COLORS = ['#f43f5e', '#f43f5e', '#f59e0b', '#22c55e', '#c8f542'];
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -23,7 +26,9 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [guestLoading, setGuestLoading] = useState(false);
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const passwordValue = watch('password') ?? '';
+  const strength = passwordStrength(passwordValue);
 
   const continueAsGuest = async () => {
     setGuestLoading(true);
@@ -100,6 +105,20 @@ export default function AuthPage() {
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          {mode === 'signup' && passwordValue.length > 0 && (
+            <div className="flex flex-col gap-1.5 -mt-1">
+              <div className="flex gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex-1 h-1 rounded-full transition-colors"
+                    style={{ backgroundColor: i < strength.score ? STRENGTH_COLORS[strength.score] : 'rgba(255,255,255,0.08)' }}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] font-mono" style={{ color: STRENGTH_COLORS[strength.score] }}>{strength.label}</span>
+            </div>
+          )}
           <AnimatePresence>
             {error && (
               <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs text-danger font-mono bg-danger/10 border border-danger/20 rounded-lg px-3 py-2">

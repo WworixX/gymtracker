@@ -15,6 +15,7 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
   const [notesOpen, setNotesOpen] = useState(false);
   const [restSeconds, setRestSeconds] = useState(item.exercise.rest_seconds ?? 120);
   const [editingRest, setEditingRest] = useState(false);
+  const [prSets, setPrSets] = useState<Set<string>>(new Set());
   const { addSet, updateSet, completeSet, deleteSet, markSetSaved, updateExerciseNotes, startRestTimer } = useWorkoutStore();
   const { saveSet, deleteSet: deleteSetDB, checkPR } = useWorkoutActions();
 
@@ -27,7 +28,10 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
       const saved = await saveSet(item.workoutExerciseId, s.set_number, s.weight, s.reps);
       markSetSaved(item.workoutExerciseId, tempId, saved.id);
       const isPR = await checkPR(item.exercise.id, s.weight, userId);
-      if (isPR) confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#c8f542', '#ffffff', '#9bbf2e'] });
+      if (isPR) {
+        setPrSets((prev) => new Set(prev).add(tempId));
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#c8f542', '#ffffff', '#9bbf2e'] });
+      }
     } catch {}
   };
 
@@ -94,6 +98,7 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
           <SetRow
             key={s.tempId}
             set={s}
+            isPR={prSets.has(s.tempId)}
             onUpdate={(field, value) => updateSet(item.workoutExerciseId, s.tempId, field, value)}
             onComplete={() => handleComplete(s.tempId)}
             onDelete={() => handleDelete(s.tempId)}

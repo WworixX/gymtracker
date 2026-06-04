@@ -25,6 +25,31 @@ export function calcVolume(sets: Array<{ weight: number; reps: number }>): numbe
   return sets.reduce((acc, s) => acc + s.weight * s.reps, 0);
 }
 
+/** 1RM estimé — formule Epley. 1 rep = poids brut. */
+export function estimate1RM(weight: number, reps: number): number {
+  if (weight <= 0 || reps <= 0) return 0;
+  if (reps === 1) return weight;
+  return Math.round(weight * (1 + reps / 30));
+}
+
+/** Meilleur 1RM estimé d'une liste de séries. */
+export function best1RM(sets: Array<{ weight: number; reps: number }>): number {
+  return sets.reduce((max, s) => Math.max(max, estimate1RM(s.weight, s.reps)), 0);
+}
+
+/** Évalue la robustesse d'un mot de passe. Score 0-4. */
+export function passwordStrength(pw: string): { score: number; label: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  score = Math.min(score, 4);
+  const labels = ['Très faible', 'Faible', 'Moyen', 'Bon', 'Excellent'];
+  return { score, label: labels[score] };
+}
+
 export function getWorkoutDuration(startedAt: string, endedAt?: string | null): number {
   const start = new Date(startedAt).getTime();
   const end = endedAt ? new Date(endedAt).getTime() : Date.now();

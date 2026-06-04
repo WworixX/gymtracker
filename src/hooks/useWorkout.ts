@@ -102,5 +102,36 @@ export function useWorkoutActions() {
     return (data ?? []) as Exercise[];
   }, []);
 
-  return { getLastSession, createWorkout, addExerciseToWorkout, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises };
+  /** Récupère les exercices (avec dernière perf) de la dernière séance terminée. */
+  const getLastWorkoutExercises = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [] as Array<{ exercise: Exercise; lastSession: { weight: number; reps: number } | null }>;
+
+    const { data } = await supabase
+      .from('workouts')
+      .select(`id, workout_exercises ( order_index, exercise:exercises (*), sets (weight, reps) )`)
+      .eq('user_id', user.id)
+      .not('ended_at', 'is', null)
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data) return [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wes = ((data as any).workout_exercises ?? []) as any[];
+    return wes
+      .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+      .map((we) => {
+        const exercise = (Array.isArray(we.exercise) ? we.exercise[0] : we.exercise) as Exercise;
+        const sets = (we.sets ?? []) as Array<{ weight: number; reps: number }>;
+        const lastSession = sets.length
+          ? sets.reduce((max, s) => (s.weight > max.weight ? s : max), sets[0])
+          : null;
+        return { exercise, lastSession: lastSession ? { weight: lastSession.weight, reps: lastSession.reps } : null };
+      })
+      .filter((x) => x.exercise);
+  }, []);
+
+  return { getLastSession, createWorkout, addExerciseToWorkout, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises, getLastWorkoutExercises };
 }

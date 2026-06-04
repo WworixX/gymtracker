@@ -8,12 +8,13 @@ import type { ActiveSet } from '@/types';
 
 interface SetRowProps {
   set: ActiveSet;
+  isPR?: boolean;
   onUpdate: (field: 'weight' | 'reps', value: number) => void;
   onComplete: () => void;
   onDelete: () => void;
 }
 
-export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
+export function SetRow({ set, isPR, onUpdate, onComplete, onDelete }: SetRowProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [swiping, setSwiping] = useState(false);
   const startX = useRef(0);
@@ -32,8 +33,8 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        animate={isPR ? { opacity: 1, scale: 1, backgroundColor: ['rgba(200,245,66,0.055)', 'rgba(200,245,66,0.2)', 'rgba(200,245,66,0.055)'] } : { opacity: 1, scale: 1 }}
+        transition={{ duration: isPR ? 0.6 : 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-center gap-3 px-3.5 h-11 rounded-[10px] border"
         style={{ background: 'rgba(200,245,66,0.055)', borderColor: 'rgba(200,245,66,0.12)' }}
       >
@@ -42,6 +43,17 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
           <Check size={13} className="text-accent" strokeWidth={3} style={{ filter: 'drop-shadow(0 0 8px rgba(200,245,66,0.4))' }} />
         </motion.span>
         <span className="font-mono text-sm text-accent">{set.weight} kg × {set.reps} reps</span>
+        {isPR && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: [0, 1.1, 1] }}
+            transition={{ duration: 0.4, ease: 'backOut' }}
+            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-semibold text-[#0c0c0f] shadow-pr-glow"
+            style={{ background: 'linear-gradient(135deg, #c8f542, #9bbf2e)' }}
+          >
+            🏆 PR
+          </motion.span>
+        )}
       </motion.div>
     );
   }
