@@ -91,3 +91,25 @@ export function cn(...classes: (string | undefined | false | null)[]): string {
 export function generateTempId(): string {
   return `temp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
+
+/** Échappe une valeur pour CSV (guillemets + séparateur). */
+function csvCell(value: string | number): string {
+  const s = String(value ?? '');
+  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+/** Construit + télécharge un fichier CSV (séparateur ; pour Excel FR). */
+export function downloadCSV(filename: string, headers: string[], rows: Array<Array<string | number>>): void {
+  const lines = [headers, ...rows].map((r) => r.map(csvCell).join(';'));
+  // BOM UTF-8 pour accents corrects dans Excel
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

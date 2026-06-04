@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import type { ActiveWorkoutExercise } from '@/types';
 import confetti from 'canvas-confetti';
 
-export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExercise; userId: string }) {
+export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: ActiveWorkoutExercise; userId: string; dragHandle?: React.ReactNode }) {
   const [notesOpen, setNotesOpen] = useState(false);
   const [restSeconds, setRestSeconds] = useState(item.exercise.rest_seconds ?? 120);
   const [editingRest, setEditingRest] = useState(false);
@@ -48,7 +48,9 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
       {/* Header */}
       <div className="px-4 pt-4 pb-3 relative z-[1]">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="min-w-0">
+          <div className="min-w-0 flex items-start gap-2">
+            {dragHandle}
+            <div className="min-w-0">
             <span className="text-base font-medium text-text-primary">{item.exercise.name}</span>
             <div className="flex items-center gap-2 mt-1.5">
               <Badge variant="muscle">{item.exercise.muscle_group}</Badge>
@@ -57,6 +59,7 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
                   {completedCount} série{completedCount > 1 ? 's' : ''} ✓
                 </span>
               )}
+            </div>
             </div>
           </div>
 

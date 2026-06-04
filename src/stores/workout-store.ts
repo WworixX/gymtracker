@@ -15,6 +15,7 @@ interface WorkoutStore {
     lastSession: { weight: number; reps: number } | null
   ) => void;
   removeExercise: (workoutExerciseId: string) => void;
+  reorderExercises: (orderedIds: string[]) => void;
   addSet: (workoutExerciseId: string) => void;
   updateSet: (workoutExerciseId: string, tempId: string, field: 'weight' | 'reps', value: number) => void;
   completeSet: (workoutExerciseId: string, tempId: string) => void;
@@ -69,6 +70,20 @@ export const useWorkoutStore = create<WorkoutStore>()(
               exercises: state.activeWorkout.exercises.filter((e) => e.workoutExerciseId !== workoutExerciseId),
             },
           };
+        }),
+
+      reorderExercises: (orderedIds) =>
+        set((state) => {
+          if (!state.activeWorkout) return state;
+          const byId = new Map(state.activeWorkout.exercises.map((e) => [e.workoutExerciseId, e]));
+          const reordered = orderedIds
+            .map((id, i) => {
+              const e = byId.get(id);
+              return e ? { ...e, orderIndex: i } : null;
+            })
+            .filter((e): e is NonNullable<typeof e> => e !== null);
+          if (reordered.length !== state.activeWorkout.exercises.length) return state;
+          return { activeWorkout: { ...state.activeWorkout, exercises: reordered } };
         }),
 
       addSet: (workoutExerciseId) =>

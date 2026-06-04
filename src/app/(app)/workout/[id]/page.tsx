@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Square, X, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { WorkoutExerciseCard } from '@/components/features/workout/WorkoutExerciseCard';
+import { Reorder } from 'framer-motion';
+import { ReorderableExerciseCard } from '@/components/features/workout/ReorderableExerciseCard';
 import { RestTimer } from '@/components/features/workout/RestTimer';
 import { ExercisePicker } from '@/components/features/workout/ExercisePicker';
 import { Button } from '@/components/ui/Button';
@@ -14,13 +14,22 @@ import { useWorkoutStore } from '@/stores/workout-store';
 import { useWorkoutActions } from '@/hooks/useWorkout';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { formatDuration, getWorkoutDuration } from '@/lib/utils';
-import type { Exercise } from '@/types';
+import type { Exercise, ActiveWorkoutExercise } from '@/types';
 
 export default function WorkoutPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user } = useAuth();
-  const { activeWorkout, clearWorkout, addExercise } = useWorkoutStore();
-  const { finishWorkout: finishDB, cancelWorkout: cancelDB, addExerciseToWorkout, getLastSession } = useWorkoutActions();
+  const { activeWorkout, clearWorkout, addExercise, reorderExercises } = useWorkoutStore();
+  const { finishWorkout: finishDB, cancelWorkout: cancelDB, addExerciseToWorkout, getLastSession, reorderExercisesDB } = useWorkoutActions();
+
+  const handleReorder = (newOrder: ActiveWorkoutExercise[]) => {
+    reorderExercises(newOrder.map((e) => e.workoutExerciseId));
+  };
+
+  const persistOrder = () => {
+    const current = useWorkoutStore.getState().activeWorkout;
+    if (current) reorderExercisesDB(current.exercises.map((e) => e.workoutExerciseId)).catch(() => {});
+  };
 
   const [elapsed, setElapsed] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -125,11 +134,21 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
           />
         )}
 
-        {activeWorkout.exercises.map((item, i) => (
-          <motion.div key={item.workoutExerciseId} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-            <WorkoutExerciseCard item={item} userId={user?.id ?? ''} />
-          </motion.div>
-        ))}
+        <Reorder.Group
+          axis="y"
+          values={activeWorkout.exercises}
+          onReorder={handleReorder}
+          className="flex flex-col gap-4"
+        >
+          {activeWorkout.exercises.map((item) => (
+            <ReorderableExerciseCard
+              key={item.workoutExerciseId}
+              item={item}
+              userId={user?.id ?? ''}
+              onDragEnd={persistOrder}
+            />
+          ))}
+        </Reorder.Group>
 
         <button
           onClick={() => setPickerOpen(true)}

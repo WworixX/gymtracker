@@ -48,6 +48,13 @@ export function useWorkoutActions() {
     return data;
   }, []);
 
+  const reorderExercisesDB = useCallback(async (orderedIds: string[]) => {
+    const supabase = createClient();
+    await Promise.all(
+      orderedIds.map((id, i) => supabase.from('workout_exercises').update({ order_index: i }).eq('id', id))
+    );
+  }, []);
+
   const saveSet = useCallback(async (workoutExerciseId: string, setNumber: number, weight: number, reps: number) => {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -102,5 +109,5 @@ export function useWorkoutActions() {
     return (data ?? []) as Exercise[];
   }, []);
 
-  return { getLastSession, createWorkout, addExerciseToWorkout, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises };
+  return { getLastSession, createWorkout, addExerciseToWorkout, reorderExercisesDB, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises };
 }
