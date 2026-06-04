@@ -7,6 +7,7 @@ import type { WeightLog, PRRecord, Exercise } from '@/types';
 
 interface DashboardData {
   streak: number;
+  totalWorkouts: number;
   lastWorkout: { name: string; date: string; exercises: string[]; totalVolume: number } | null;
   recentPRs: PRRecord[];
   weightLogs: WeightLog[];
@@ -20,6 +21,7 @@ type AnyWorkoutExercise = any;
 export function useDashboard() {
   const [data, setData] = useState<DashboardData>({
     streak: 0,
+    totalWorkouts: 0,
     lastWorkout: null,
     recentPRs: [],
     weightLogs: [],
@@ -36,7 +38,7 @@ export function useDashboard() {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const [workoutsRes, weightRes] = await Promise.all([
+      const [workoutsRes, weightRes, countRes] = await Promise.all([
         supabase
           .from('workouts')
           .select(`id, name, started_at, ended_at,
@@ -56,11 +58,17 @@ export function useDashboard() {
           .eq('user_id', user.id)
           .order('logged_at', { ascending: false })
           .limit(7),
+        supabase
+          .from('workouts')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .not('ended_at', 'is', null),
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const workouts: any[] = workoutsRes.data ?? [];
       const weightLogs = (weightRes.data ?? []) as WeightLog[];
+      const totalWorkouts = countRes.count ?? 0;
       const streak = getStreakDays(workouts.map((w) => w.started_at as string));
 
       let lastWorkout = null;
@@ -106,6 +114,7 @@ export function useDashboard() {
 
       setData({
         streak,
+        totalWorkouts,
         lastWorkout,
         recentPRs: [...prMap.values()].slice(0, 3),
         weightLogs,
