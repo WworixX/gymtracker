@@ -14,6 +14,7 @@ import { useTemplates } from '@/hooks/useTemplates';
 import { useWorkoutActions } from '@/hooks/useWorkout';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useToast } from '@/components/providers/ToastProvider';
 import type { Exercise, Template } from '@/types';
 
 export function TemplatesSection() {
@@ -21,6 +22,7 @@ export function TemplatesSection() {
   const { createWorkout, addExerciseToWorkout, getLastSession } = useWorkoutActions();
   const { startWorkout, addExercise, activeWorkout } = useWorkoutStore();
   const { user } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -43,8 +45,11 @@ export function TemplatesSection() {
     setSaving(true);
     try {
       await createTemplate(name.trim(), selected.map((e) => e.id));
+      toast('Programme créé', 'success');
       resetCreate();
-    } catch (e) { console.error(e); }
+    } catch {
+      toast('Impossible de créer le programme', 'error');
+    }
     finally { setSaving(false); }
   };
 
@@ -63,8 +68,8 @@ export function TemplatesSection() {
         i++;
       }
       router.push(`/workout/${workout.id}`);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      toast('Impossible de lancer le programme', 'error');
       setLaunchingId(null);
     }
   };
@@ -111,7 +116,7 @@ export function TemplatesSection() {
       {/* Modal création */}
       <Modal open={createOpen} onClose={resetCreate} title="Nouveau programme">
         <div className="flex flex-col gap-4">
-          <Input label="Nom du programme" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Push / Pull / Legs" />
+          <Input label="Nom du programme" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Push / Pull / Legs" maxLength={60} />
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">

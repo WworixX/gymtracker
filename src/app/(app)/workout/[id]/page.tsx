@@ -13,12 +13,14 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { useWorkoutActions } from '@/hooks/useWorkout';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useToast } from '@/components/providers/ToastProvider';
 import { formatDuration, getWorkoutDuration } from '@/lib/utils';
 import type { Exercise, ActiveWorkoutExercise } from '@/types';
 
 export default function WorkoutPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { activeWorkout, clearWorkout, addExercise, reorderExercises } = useWorkoutStore();
   const { finishWorkout: finishDB, cancelWorkout: cancelDB, addExerciseToWorkout, getLastSession, reorderExercisesDB } = useWorkoutActions();
 
@@ -74,8 +76,12 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
     setFinishing(true);
     try {
       await finishDB(activeWorkout.id);
+      const count = activeWorkout.exercises.flatMap((e) => e.sets).filter((s) => s.completed).length;
       clearWorkout();
+      toast(`Séance terminée — ${count} série${count > 1 ? 's' : ''} 💪`, 'success');
       router.replace('/dashboard');
+    } catch {
+      toast('Erreur lors de la sauvegarde', 'error');
     } finally {
       setFinishing(false);
     }
@@ -100,7 +106,7 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header premium */}
-      <div className="sticky top-0 z-20 glass-header border-b border-[rgba(255,255,255,0.07)] px-4 py-3">
+      <div className="sticky top-0 z-20 glass-header border-b border-[rgba(255,255,255,0.07)] px-4 py-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
         <div className="flex items-center justify-between max-w-2xl mx-auto gap-3">
           <button
             onClick={() => setCancelModalOpen(true)}

@@ -6,9 +6,11 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { ProgressChart } from '@/components/features/progress/ProgressChart';
+import dynamic from 'next/dynamic';
 import { CreateExerciseModal } from '@/components/features/exercises/CreateExerciseModal';
 import { PageTransition } from '@/components/ui/PageTransition';
+
+const ProgressChart = dynamic(() => import('@/components/features/progress/ProgressChart').then((m) => m.ProgressChart), { ssr: false, loading: () => <div className="h-52" /> });
 import { useProgress, useExerciseList } from '@/hooks/useProgress';
 import { formatDate } from '@/lib/utils';
 import type { Exercise } from '@/types';

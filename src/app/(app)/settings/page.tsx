@@ -144,7 +144,7 @@ export default function SettingsPage() {
       </Card>
       <Modal open={exerciseModalOpen} onClose={() => setExerciseModalOpen(false)} title={editingExercise ? 'Modifier' : 'Nouvel exercice'}>
         <form onSubmit={exForm.handleSubmit(onExerciseSubmit)} className="flex flex-col gap-4">
-          <Input label="Nom" {...exForm.register('name')} error={exForm.formState.errors.name?.message} />
+          <Input label="Nom" maxLength={60} {...exForm.register('name')} error={exForm.formState.errors.name?.message} />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-mono uppercase tracking-widest text-text-secondary">Groupe musculaire</label>
             <select {...exForm.register('muscle_group')} className="w-full h-11 px-3 bg-bg-overlay border border-border rounded-lg text-text-primary font-mono text-sm focus:outline-none focus:border-border-active">

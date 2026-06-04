@@ -133,6 +133,7 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
                   value={item.notes}
                   onChange={(e) => updateExerciseNotes(item.workoutExerciseId, e.target.value)}
                   placeholder="Notes..."
+                  maxLength={500}
                   className="mt-2 w-full bg-bg-overlay border border-border rounded-lg p-2.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-active resize-none font-mono"
                   rows={2}
                 />

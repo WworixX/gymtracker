@@ -11,10 +11,12 @@ import { Spinner } from '@/components/ui/Spinner';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { useHistory } from '@/hooks/useHistory';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/providers/ToastProvider';
 import { formatDate, formatDuration, getWorkoutDuration, downloadCSV } from '@/lib/utils';
 
 export default function HistoryPage() {
   const { items, loading, hasMore, loadMore } = useHistory();
+  const { toast } = useToast();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -49,7 +51,10 @@ export default function HistoryPage() {
         ['Date', 'Séance', 'Exercice', 'Groupe', 'Série', 'Poids (kg)', 'Reps', 'Volume (kg)'],
         rows
       );
-    } catch (e) { console.error(e); }
+      toast(`Export réussi (${rows.length} lignes)`, 'success');
+    } catch {
+      toast('Échec de l\'export', 'error');
+    }
     finally { setExporting(false); }
   };
 

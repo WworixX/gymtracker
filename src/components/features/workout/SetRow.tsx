@@ -41,10 +41,10 @@ export function SetRow({ set, isPR, onUpdate, onComplete, onDelete }: SetRowProp
         )}
         <button
           onClick={onDelete}
-          className="ml-auto w-7 h-7 shrink-0 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-colors"
+          className="ml-auto w-9 h-9 shrink-0 flex items-center justify-center rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-colors"
           aria-label="Supprimer la série"
         >
-          <Trash2 size={13} />
+          <Trash2 size={14} />
         </button>
       </motion.div>
     );

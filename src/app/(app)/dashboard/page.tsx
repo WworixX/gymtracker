@@ -7,16 +7,19 @@ import { motion, useSpring, useTransform } from 'framer-motion';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import dynamic from 'next/dynamic';
 import { SkeletonCard } from '@/components/ui/Skeleton';
-import { WeightSparkline } from '@/components/features/dashboard/WeightSparkline';
-import { VolumeChart } from '@/components/features/dashboard/VolumeChart';
 import { RecentPRs } from '@/components/features/dashboard/RecentPRs';
+
+const WeightSparkline = dynamic(() => import('@/components/features/dashboard/WeightSparkline').then((m) => m.WeightSparkline), { ssr: false, loading: () => <div className="h-14" /> });
+const VolumeChart = dynamic(() => import('@/components/features/dashboard/VolumeChart').then((m) => m.VolumeChart), { ssr: false, loading: () => <div className="h-36" /> });
 import { TemplatesSection } from '@/components/features/dashboard/TemplatesSection';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { useWorkoutActions } from '@/hooks/useWorkout';
 import { useWeightLogs } from '@/hooks/useBodyLogs';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { useToast } from '@/components/providers/ToastProvider';
 import { formatDate } from '@/lib/utils';
 
 const fadeUp = {
@@ -52,6 +55,7 @@ export default function DashboardPage() {
   const { createWorkout } = useWorkoutActions();
   const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState('');
@@ -90,8 +94,11 @@ export default function DashboardPage() {
       await upsertWeight(value, new Date().toISOString().split('T')[0]);
       setWeightSaved(true);
       setWeightInput('');
+      toast(`Poids enregistré : ${value} kg`, 'success');
       setTimeout(() => setWeightSaved(false), 2000);
-    } catch (e) { console.error(e); }
+    } catch {
+      toast('Impossible d\'enregistrer le poids', 'error');
+    }
     finally { setSavingWeight(false); }
   };
 

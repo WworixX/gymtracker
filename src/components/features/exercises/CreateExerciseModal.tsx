@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/components/providers/ToastProvider';
 import { MUSCLE_GROUPS } from '@/types';
 import type { Exercise } from '@/types';
 
@@ -27,6 +28,7 @@ interface CreateExerciseModalProps {
 export function CreateExerciseModal({ open, onClose, onCreated }: CreateExerciseModalProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { toast } = useToast();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { rest_seconds: 90 },
@@ -45,6 +47,7 @@ export function CreateExerciseModal({ open, onClose, onCreated }: CreateExercise
       .single();
     setSaving(false);
     if (insErr || !data) { setError(insErr?.message ?? 'Erreur'); return; }
+    toast('Exercice créé', 'success');
     onCreated(data as Exercise);
     reset();
     onClose();
@@ -53,7 +56,7 @@ export function CreateExerciseModal({ open, onClose, onCreated }: CreateExercise
   return (
     <Modal open={open} onClose={onClose} title="Nouvel exercice">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <Input label="Nom" {...register('name')} error={errors.name?.message} placeholder="Ex: Curl haltères" />
+        <Input label="Nom" maxLength={60} {...register('name')} error={errors.name?.message} placeholder="Ex: Curl haltères" />
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] font-sans font-medium uppercase tracking-[0.12em] text-text-muted">Groupe musculaire</label>
           <select {...register('muscle_group')} className="w-full h-11 px-3 bg-bg-overlay border border-border rounded-[10px] text-text-primary font-mono text-sm focus:outline-none focus:border-border-accent">

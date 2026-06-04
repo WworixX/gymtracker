@@ -80,7 +80,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [] }: Ex
             <button type="button" onClick={() => setShowCreate(false)} className="text-text-muted hover:text-text-primary"><X size={16} /></button>
             <span className="text-xs font-mono uppercase tracking-widest text-text-secondary">Nouvel exercice</span>
           </div>
-          <Input label="Nom" {...register('name')} error={errors.name?.message} placeholder="Ex: Curl haltères" />
+          <Input label="Nom" maxLength={60} {...register('name')} error={errors.name?.message} placeholder="Ex: Curl haltères" />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-mono uppercase tracking-widest text-text-secondary">Groupe musculaire</label>
             <select {...register('muscle_group')} className="w-full h-11 px-3 bg-bg-overlay border border-border rounded-lg text-text-primary font-mono text-sm focus:outline-none focus:border-border-active">
