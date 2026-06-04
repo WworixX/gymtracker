@@ -46,10 +46,10 @@ function StatCard({ label, value, unit, icon, accent }: { label: string; value: 
 }
 
 export default function DashboardPage() {
-  const { totalWorkouts, lastWorkout, recentPRs, weightLogs, volumeByMuscle, loading } = useDashboard();
+  const { totalWorkouts, lastWorkout, recentPRs, volumeByMuscle, loading } = useDashboard();
   const { startWorkout, activeWorkout } = useWorkoutStore();
   const { createWorkout } = useWorkoutActions();
-  const { upsert: upsertWeight } = useWeightLogs(7);
+  const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
   const { user } = useAuth();
 
   const [starting, setStarting] = useState(false);

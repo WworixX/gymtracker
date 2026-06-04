@@ -54,41 +54,49 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-bg-overlay border border-border"
+        className="flex items-center gap-1.5 px-2.5 py-2 rounded-[10px] bg-bg-overlay border border-border"
       >
-        <span className="w-4 text-center text-xs font-mono text-text-muted shrink-0">{set.set_number}</span>
+        <span className="w-3.5 text-center text-xs font-mono text-text-muted shrink-0">{set.set_number}</span>
 
-        <input
-          type="number" inputMode="decimal"
-          value={set.weight || ''}
-          onChange={(e) => onUpdate('weight', parseFloat(e.target.value) || 0)}
-          placeholder="0"
-          className="w-16 h-10 text-center bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[3px] focus:ring-accent/[0.08] transition-colors"
-        />
-        <span className="text-text-muted text-xs font-mono shrink-0">kg</span>
+        {/* Poids */}
+        <div className="relative flex-1 min-w-0">
+          <input
+            type="number" inputMode="decimal"
+            value={set.weight || ''}
+            onChange={(e) => onUpdate('weight', parseFloat(e.target.value) || 0)}
+            placeholder="0"
+            className="w-full h-10 pl-2 pr-6 text-left bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[2px] focus:ring-accent/[0.08] transition-colors"
+          />
+          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-text-muted text-[10px] font-mono pointer-events-none">kg</span>
+        </div>
+
         <span className="text-text-muted text-xs font-mono shrink-0">×</span>
 
-        <input
-          type="number" inputMode="numeric"
-          value={set.reps || ''}
-          onChange={(e) => onUpdate('reps', parseInt(e.target.value, 10) || 0)}
-          placeholder="0"
-          className="w-14 h-10 text-center bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[3px] focus:ring-accent/[0.08] transition-colors"
-        />
-        <span className="text-text-muted text-xs font-mono shrink-0">reps</span>
+        {/* Reps */}
+        <div className="relative flex-1 min-w-0">
+          <input
+            type="number" inputMode="numeric"
+            value={set.reps || ''}
+            onChange={(e) => onUpdate('reps', parseInt(e.target.value, 10) || 0)}
+            placeholder="0"
+            className="w-full h-10 pl-2 pr-8 text-left bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[2px] focus:ring-accent/[0.08] transition-colors"
+          />
+          <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-text-muted text-[10px] font-mono pointer-events-none">reps</span>
+        </div>
 
+        {/* Valider — icône seule, taille fixe */}
         <button
           onClick={onComplete}
           disabled={!set.weight || !set.reps}
           className={cn(
-            'ml-auto h-10 px-3.5 rounded-[10px] flex items-center justify-center gap-1.5 text-xs font-sans font-semibold shrink-0 transition-all active:scale-[0.97]',
+            'w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 transition-all active:scale-[0.97]',
             set.weight && set.reps
-              ? 'bg-accent text-[#0c0c0f] hover:brightness-105 accent-glow'
+              ? 'bg-accent text-[#0c0c0f] hover:brightness-105'
               : 'bg-bg-elevated border border-border text-text-muted opacity-40'
           )}
+          aria-label="Valider la série"
         >
-          <Check size={14} strokeWidth={2.5} />
-          <span className="hidden sm:inline">OK</span>
+          <Check size={16} strokeWidth={2.5} />
         </button>
       </motion.div>
     </div>
