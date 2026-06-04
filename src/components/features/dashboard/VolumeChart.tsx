@@ -11,17 +11,18 @@ export function VolumeChart({ data }: { data: Record<string, number> }) {
   if (!sorted.length) return <div className="h-32 flex items-center justify-center text-text-muted text-xs font-mono">Aucune donnée</div>;
 
   return (
-    <div className="h-32">
+    <div className="h-36">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={sorted} layout="vertical" margin={{ left: 0, right: 8, top: 0, bottom: 0 }}>
           <XAxis type="number" hide />
           <Tooltip
-            contentStyle={{ backgroundColor: '#1c1c1c', border: '1px solid #2a2a2a', borderRadius: '6px', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#f0f0f0' }}
+            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+            contentStyle={{ backgroundColor: '#18181f', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#f2f2f4' }}
             formatter={(v: number) => [`${v.toLocaleString()} kg`, '']}
           />
-          <Bar dataKey="volume" radius={[0, 4, 4, 0]}>
+          <Bar dataKey="volume" radius={[0, 6, 6, 0]}>
             {sorted.map((_, i) => (
-              <Cell key={i} fill={i === 0 ? '#c8f542' : `rgba(200,245,66,${Math.max(0.1, 0.3 - i * 0.03)})`} />
+              <Cell key={i} fill={i === 0 ? '#c8f542' : `rgba(200,245,66,${Math.max(0.12, 0.4 - i * 0.04)})`} />
             ))}
           </Bar>
         </BarChart>

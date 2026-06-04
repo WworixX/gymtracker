@@ -40,16 +40,16 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
   const completedCount = item.sets.filter((s) => s.completed).length;
 
   return (
-    <div className="bg-bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="card-glass overflow-hidden">
       {/* Header */}
-      <div className="px-4 pt-4 pb-3">
+      <div className="px-4 pt-4 pb-3 relative z-[1]">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
-            <span className="text-base font-semibold text-text-primary">{item.exercise.name}</span>
-            <div className="flex items-center gap-2 mt-1">
+            <span className="text-base font-medium text-text-primary">{item.exercise.name}</span>
+            <div className="flex items-center gap-2 mt-1.5">
               <Badge variant="muscle">{item.exercise.muscle_group}</Badge>
               {completedCount > 0 && (
-                <span className="text-[10px] font-mono text-success uppercase tracking-wider">
+                <span className="text-[10px] font-mono text-accent uppercase tracking-wider">
                   {completedCount} série{completedCount > 1 ? 's' : ''} ✓
                 </span>
               )}
@@ -89,7 +89,7 @@ export function WorkoutExerciseCard({ item, userId }: { item: ActiveWorkoutExerc
       </div>
 
       {/* Sets */}
-      <div className="px-4 pb-3 flex flex-col gap-2">
+      <div className="px-4 pb-4 flex flex-col gap-2 relative z-[1]">
         {item.sets.map((s) => (
           <SetRow
             key={s.tempId}

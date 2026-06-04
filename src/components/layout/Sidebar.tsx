@@ -21,7 +21,7 @@ export function Sidebar() {
   const { signOut } = useAuth();
 
   return (
-    <aside className="hidden md:flex flex-col w-60 h-screen fixed left-0 top-0 bg-bg-base border-r border-border z-30">
+    <aside className="hidden md:flex flex-col w-60 h-screen fixed left-0 top-0 glass-nav border-r border-border z-30">
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
           <Dumbbell size={16} className="text-bg-base" strokeWidth={2.5} />

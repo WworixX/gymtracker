@@ -40,7 +40,7 @@ export function RestTimer() {
   const progress = restTimer.totalSeconds > 0 ? restTimer.secondsLeft / restTimer.totalSeconds : 0;
 
   const color =
-    restTimer.secondsLeft <= 10 ? '#ff4545' :
+    restTimer.secondsLeft <= 10 ? '#f43f5e' :
     restTimer.secondsLeft <= 30 ? '#f59e0b' :
     '#c8f542';
 
@@ -54,12 +54,12 @@ export function RestTimer() {
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 md:bottom-6"
         >
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-bg-elevated border border-border shadow-lg shadow-black/40 backdrop-blur">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-nav border border-border shadow-glass">
             {/* Progress bar */}
-            <div className="relative w-28 h-1.5 bg-border rounded-full overflow-hidden">
+            <div className="relative w-28 h-[3px] bg-white/5 rounded-full overflow-hidden">
               <motion.div
                 className="absolute inset-y-0 left-0 rounded-full"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}
                 animate={{ width: `${progress * 100}%` }}
                 transition={{ duration: 0.9, ease: 'linear' }}
               />

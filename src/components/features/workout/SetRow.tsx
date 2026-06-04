@@ -30,18 +30,23 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
 
   if (set.completed) {
     return (
-      <div className="flex items-center gap-3 px-3 h-11 rounded-lg bg-success/10 border border-success/20">
+      <motion.div
+        initial={{ opacity: 0.6 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center gap-3 px-3.5 h-11 rounded-[10px] border"
+        style={{ background: 'var(--accent-ghost)', borderColor: 'var(--accent-glow)' }}
+      >
         <span className="w-4 text-center text-xs font-mono text-text-muted">{set.set_number}</span>
-        <Check size={12} className="text-success" strokeWidth={3} />
-        <span className="font-mono text-sm text-success">{set.weight} kg × {set.reps} reps</span>
-      </div>
+        <Check size={13} className="text-accent" strokeWidth={3} />
+        <span className="font-mono text-sm text-accent">{set.weight} kg × {set.reps} reps</span>
+      </motion.div>
     );
   }
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
-      <div className="absolute inset-y-0 right-0 flex items-center px-3 bg-danger/20">
-        <span className="text-danger text-[10px] font-mono uppercase">Suppr.</span>
+    <div className="relative overflow-hidden rounded-[10px]">
+      <div className="absolute inset-y-0 right-0 flex items-center px-3 bg-danger/15 rounded-[10px]">
+        <span className="text-danger text-[10px] font-mono uppercase tracking-wider">Suppr.</span>
       </div>
       <motion.div
         style={{ x: swiping ? swipeX : 0 }}
@@ -49,44 +54,40 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-overlay border border-border"
+        className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-bg-overlay border border-border"
       >
-        {/* Numéro */}
         <span className="w-4 text-center text-xs font-mono text-text-muted shrink-0">{set.set_number}</span>
 
-        {/* Poids */}
         <input
           type="number" inputMode="decimal"
           value={set.weight || ''}
           onChange={(e) => onUpdate('weight', parseFloat(e.target.value) || 0)}
           placeholder="0"
-          className="w-16 h-10 text-center bg-bg-elevated border border-border rounded-lg text-sm font-mono font-semibold text-text-primary focus:outline-none focus:border-accent transition-colors"
+          className="w-16 h-10 text-center bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[3px] focus:ring-accent/[0.08] transition-colors"
         />
         <span className="text-text-muted text-xs font-mono shrink-0">kg</span>
         <span className="text-text-muted text-xs font-mono shrink-0">×</span>
 
-        {/* Reps */}
         <input
           type="number" inputMode="numeric"
           value={set.reps || ''}
           onChange={(e) => onUpdate('reps', parseInt(e.target.value, 10) || 0)}
           placeholder="0"
-          className="w-14 h-10 text-center bg-bg-elevated border border-border rounded-lg text-sm font-mono font-semibold text-text-primary focus:outline-none focus:border-accent transition-colors"
+          className="w-14 h-10 text-center bg-bg-elevated border border-border rounded-[10px] text-sm font-mono font-medium text-text-primary focus:outline-none focus:border-border-accent focus:ring-[3px] focus:ring-accent/[0.08] transition-colors"
         />
         <span className="text-text-muted text-xs font-mono shrink-0">reps</span>
 
-        {/* Bouton valider */}
         <button
           onClick={onComplete}
           disabled={!set.weight || !set.reps}
           className={cn(
-            'ml-auto h-10 px-3 rounded-lg flex items-center justify-center gap-1.5 text-xs font-semibold shrink-0 transition-all',
+            'ml-auto h-10 px-3.5 rounded-[10px] flex items-center justify-center gap-1.5 text-xs font-sans font-semibold shrink-0 transition-all active:scale-[0.97]',
             set.weight && set.reps
-              ? 'bg-accent text-bg-base hover:bg-accent-dim active:scale-95'
+              ? 'bg-accent text-[#0c0c0f] hover:brightness-105 accent-glow'
               : 'bg-bg-elevated border border-border text-text-muted opacity-40'
           )}
         >
-          <Check size={13} strokeWidth={2.5} />
+          <Check size={14} strokeWidth={2.5} />
           <span className="hidden sm:inline">OK</span>
         </button>
       </motion.div>
