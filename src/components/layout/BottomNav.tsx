@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { Home, Calendar, TrendingUp, HeartPulse, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 glass-nav border-t border-border md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-30 glass-nav border-t border-[rgba(255,255,255,0.07)] md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="grid grid-cols-5 h-16">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href;
@@ -25,11 +26,19 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className={cn('flex flex-col items-center justify-center gap-1 transition-colors duration-150 relative', isActive ? 'text-accent' : 'text-text-muted hover:text-text-secondary')}
+              className={cn('flex flex-col items-center justify-center gap-1 transition-colors duration-200 relative', isActive ? 'text-accent' : 'text-text-muted hover:text-text-secondary')}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} />
+              <motion.span whileTap={{ scale: 0.88 }} transition={{ duration: 0.15 }} className="flex flex-col items-center">
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.75} className={isActive ? 'nav-active-glow' : ''} />
+              </motion.span>
               <span className="text-[10px] font-sans font-medium uppercase tracking-wider">{label}</span>
-              {isActive && <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent" />}
+              {isActive && (
+                <motion.span
+                  layoutId="nav-dot"
+                  className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent"
+                  style={{ boxShadow: '0 0 6px #c8f542' }}
+                />
+              )}
             </Link>
           );
         })}

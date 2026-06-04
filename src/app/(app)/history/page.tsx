@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useHistory } from '@/hooks/useHistory';
 import { formatDate, formatDuration, getWorkoutDuration } from '@/lib/utils';
 
@@ -16,9 +17,9 @@ export default function HistoryPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="p-4 max-w-2xl mx-auto flex flex-col gap-4">
+    <PageTransition className="p-4 max-w-2xl mx-auto flex flex-col gap-4">
       <div>
-        <h1 className="font-mono text-xs uppercase tracking-widest text-text-secondary mb-0.5">Historique</h1>
+        <h1 className="text-[11px] font-sans font-medium uppercase tracking-[0.12em] text-text-muted mb-0.5">Historique</h1>
         <p className="text-text-muted text-xs font-mono">{items.length} séance{items.length > 1 ? 's' : ''}</p>
       </div>
       {loading && !items.length && <div className="flex justify-center py-8"><Spinner /></div>}
@@ -66,6 +67,6 @@ export default function HistoryPage() {
         })}
       </div>
       {hasMore && <Button variant="secondary" onClick={loadMore} loading={loading} fullWidth>Charger plus</Button>}
-    </div>
+    </PageTransition>
   );
 }

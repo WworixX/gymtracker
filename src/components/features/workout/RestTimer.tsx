@@ -32,7 +32,10 @@ export function RestTimer() {
   }, [restTimer.active, tickRestTimer]);
 
   useEffect(() => {
-    if (restTimer.active && restTimer.secondsLeft === 0 && prevSeconds.current > 0) playBeep(660);
+    if (restTimer.active && restTimer.secondsLeft === 0 && prevSeconds.current > 0) {
+      playBeep(660);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200]);
+    }
     if (restTimer.active && restTimer.secondsLeft <= 10 && prevSeconds.current === restTimer.secondsLeft + 1) playBeep(880);
     prevSeconds.current = restTimer.secondsLeft;
   }, [restTimer]);
@@ -54,7 +57,11 @@ export function RestTimer() {
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
           className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 md:bottom-6"
         >
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-nav border border-border shadow-glass">
+          <motion.div
+            className="flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-nav border border-border shadow-glass"
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: restTimer.secondsLeft <= 10 ? 0.8 : 1, repeat: Infinity, ease: 'easeInOut' }}
+          >
             {/* Progress bar */}
             <div className="relative w-28 h-[3px] bg-white/5 rounded-full overflow-hidden">
               <motion.div
@@ -67,8 +74,8 @@ export function RestTimer() {
 
             {/* Countdown */}
             <span
-              className="font-mono text-sm font-bold tabular-nums w-10 text-center"
-              style={{ color }}
+              className="font-mono text-sm font-medium tabular-nums w-10 text-center"
+              style={{ color, textShadow: `0 0 16px ${color}80` }}
             >
               {formatDuration(restTimer.secondsLeft)}
             </span>
@@ -84,7 +91,7 @@ export function RestTimer() {
             >
               <X size={13} />
             </button>
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

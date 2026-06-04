@@ -5,11 +5,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Trash2 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ChartTooltip } from '@/components/ui/ChartTooltip';
 import { useWeightLogs } from '@/hooks/useBodyLogs';
 import { formatDateShort } from '@/lib/utils';
 
@@ -64,13 +65,20 @@ export function WeightLog() {
         <Card>
           <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: '#555', fontSize: 10, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#555', fontSize: 10, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} domain={['auto', 'auto']} width={36} />
-                <Tooltip contentStyle={{ backgroundColor: '#1c1c1c', border: '1px solid #2a2a2a', borderRadius: '8px', fontSize: '12px', fontFamily: 'DM Mono', color: '#f0f0f0' }} formatter={(v: number) => [`${v} kg`, '']} />
-                <Line type="monotone" dataKey="weight" stroke="#c8f542" strokeWidth={2} dot={{ fill: '#c8f542', r: 2, strokeWidth: 0 }} />
-              </LineChart>
+              <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#c8f542" stopOpacity={0.18} />
+                    <stop offset="60%" stopColor="#c8f542" stopOpacity={0.04} />
+                    <stop offset="100%" stopColor="#c8f542" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} domain={['auto', 'auto']} width={35} />
+                <Tooltip content={<ChartTooltip unit=" kg" labelKey="date" />} />
+                <Area type="monotone" dataKey="weight" stroke="#c8f542" strokeWidth={2} fill="url(#weightFill)" dot={false} activeDot={{ r: 5, fill: '#c8f542', stroke: 'rgba(200,245,66,0.3)', strokeWidth: 6 }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>

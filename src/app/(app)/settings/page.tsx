@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { MUSCLE_GROUPS } from '@/types';
 import type { Exercise, Profile } from '@/types';
@@ -92,8 +93,8 @@ export default function SettingsPage() {
   if (loading) return <div className="flex justify-center py-8"><Spinner /></div>;
 
   return (
-    <div className="p-4 max-w-2xl mx-auto flex flex-col gap-5">
-      <h1 className="font-mono text-xs uppercase tracking-widest text-text-secondary">Profil</h1>
+    <PageTransition className="p-4 max-w-2xl mx-auto flex flex-col gap-5">
+      <h1 className="text-[11px] font-sans font-medium uppercase tracking-[0.12em] text-text-muted">Profil</h1>
       <Card>
         <CardHeader><CardTitle>Profil</CardTitle></CardHeader>
         <form onSubmit={profForm.handleSubmit(onProfileSubmit)} className="flex flex-col gap-3">
@@ -155,6 +156,6 @@ export default function SettingsPage() {
           <Button type="submit" loading={saving} fullWidth>{editingExercise ? 'Mettre à jour' : 'Créer'}</Button>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

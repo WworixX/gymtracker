@@ -2,6 +2,7 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { formatDateShort } from '@/lib/utils';
+import { ChartTooltip } from '@/components/ui/ChartTooltip';
 
 interface ProgressChartProps {
   data: Array<{ date: string; maxWeight: number }>;
@@ -20,13 +21,12 @@ export function ProgressChart({ data, pr }: ProgressChartProps) {
               <stop offset="100%" stopColor="#c8f542" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis dataKey="displayDate" tick={{ fill: '#4a4a5a', fontSize: 10, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: '#4a4a5a', fontSize: 10, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}kg`} width={48} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <XAxis dataKey="displayDate" tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}kg`} width={42} />
           <Tooltip
             cursor={{ stroke: 'rgba(200,245,66,0.2)', strokeWidth: 1 }}
-            contentStyle={{ backgroundColor: '#18181f', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '12px', fontFamily: 'DM Mono', color: '#f2f2f4' }}
-            formatter={(v: number) => [`${v} kg`, 'Max']}
+            content={<ChartTooltip unit=" kg" labelKey="displayDate" />}
           />
           {pr && <ReferenceLine y={pr.weight} stroke="#c8f542" strokeDasharray="4 4" strokeOpacity={0.4} />}
           <Area

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { WeightLog } from '@/components/features/body/WeightLog';
 import { MeasurementsLog } from '@/components/features/body/MeasurementsLog';
 import { PhotosGrid } from '@/components/features/body/PhotosGrid';
@@ -18,11 +19,11 @@ type TabId = (typeof TABS)[number]['id'];
 export default function BodyPage() {
   const [tab, setTab] = useState<TabId>('weight');
   return (
-    <div className="p-4 max-w-2xl mx-auto flex flex-col gap-4">
-      <h1 className="font-mono text-xs uppercase tracking-widest text-text-secondary">Corps</h1>
-      <div className="flex gap-1 bg-bg-surface border border-border rounded-lg p-1">
+    <PageTransition className="p-4 max-w-2xl mx-auto flex flex-col gap-4">
+      <h1 className="text-[11px] font-sans font-medium uppercase tracking-[0.12em] text-text-muted">Corps</h1>
+      <div className="flex gap-1 card-glass !rounded-[14px] p-1">
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={cn('flex-1 py-2 text-xs font-mono uppercase tracking-wider rounded-md transition-colors', tab === t.id ? 'bg-bg-elevated text-text-primary' : 'text-text-muted hover:text-text-secondary')}>
+          <button key={t.id} onClick={() => setTab(t.id)} className={cn('flex-1 py-2 text-xs font-sans font-medium uppercase tracking-wider rounded-[10px] transition-colors', tab === t.id ? 'bg-bg-elevated text-text-primary' : 'text-text-muted hover:text-text-secondary')}>
             {t.label}
           </button>
         ))}
@@ -31,6 +32,6 @@ export default function BodyPage() {
       {tab === 'measurements' && <MeasurementsLog />}
       {tab === 'photos' && <PhotosGrid />}
       {tab === 'macros' && <MacrosLog />}
-    </div>
+    </PageTransition>
   );
 }

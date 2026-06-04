@@ -89,31 +89,30 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
   const completedSets = activeWorkout.exercises.flatMap((e) => e.sets).filter((s) => s.completed).length;
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-base">
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-bg-base/95 backdrop-blur border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between max-w-2xl mx-auto gap-2">
-          <div className="min-w-0 flex items-center gap-3">
-            <button
-              onClick={() => setCancelModalOpen(true)}
-              className="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg border border-border text-text-muted hover:text-danger hover:border-danger/40 transition-colors"
-              aria-label="Annuler"
-            >
-              <X size={16} />
-            </button>
-            <div className="min-w-0">
-              <p className="text-xs font-mono uppercase tracking-widest text-text-muted">En cours</p>
-              <div className="font-mono text-accent text-xl font-bold tabular-nums leading-tight">{formatDuration(elapsed)}</div>
-            </div>
+    <div className="flex flex-col min-h-screen">
+      {/* Header premium */}
+      <div className="sticky top-0 z-20 glass-header border-b border-[rgba(255,255,255,0.07)] px-4 py-3">
+        <div className="flex items-center justify-between max-w-2xl mx-auto gap-3">
+          <button
+            onClick={() => setCancelModalOpen(true)}
+            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-[10px] border border-border text-text-muted hover:text-danger hover:border-danger/40 transition-colors"
+            aria-label="Annuler"
+          >
+            <X size={16} />
+          </button>
+
+          <div className="flex flex-col items-center min-w-0 flex-1">
+            <p className="text-[10px] font-sans uppercase tracking-[0.12em] text-text-muted truncate max-w-full">{activeWorkout.name}</p>
+            <div className="font-mono text-xl font-medium tabular-nums leading-tight text-accent chrono-glow">{formatDuration(elapsed)}</div>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
+
+          <button
             onClick={() => setFinishModalOpen(true)}
-            className="border-success/30 text-success hover:bg-success/10 shrink-0"
+            className="shrink-0 h-9 px-3.5 inline-flex items-center gap-1.5 rounded-[10px] text-sm font-sans font-medium transition-colors"
+            style={{ background: 'rgba(244,63,94,0.12)', border: '0.5px solid rgba(244,63,94,0.25)', color: '#f43f5e' }}
           >
             <Square size={13} /> Terminer
-          </Button>
+          </button>
         </div>
       </div>
 

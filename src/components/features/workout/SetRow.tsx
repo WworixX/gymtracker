@@ -31,17 +31,22 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
   if (set.completed) {
     return (
       <motion.div
-        initial={{ opacity: 0.6 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-center gap-3 px-3.5 h-11 rounded-[10px] border"
-        style={{ background: 'var(--accent-ghost)', borderColor: 'var(--accent-glow)' }}
+        style={{ background: 'rgba(200,245,66,0.055)', borderColor: 'rgba(200,245,66,0.12)' }}
       >
         <span className="w-4 text-center text-xs font-mono text-text-muted">{set.set_number}</span>
-        <Check size={13} className="text-accent" strokeWidth={3} />
+        <motion.span initial={{ scale: 0 }} animate={{ scale: [0, 1.2, 1] }} transition={{ duration: 0.25, times: [0, 0.6, 1] }}>
+          <Check size={13} className="text-accent" strokeWidth={3} style={{ filter: 'drop-shadow(0 0 8px rgba(200,245,66,0.4))' }} />
+        </motion.span>
         <span className="font-mono text-sm text-accent">{set.weight} kg × {set.reps} reps</span>
       </motion.div>
     );
   }
+
+  const hasValues = !!set.weight && !!set.reps;
 
   return (
     <div className="relative overflow-hidden rounded-[10px]">
@@ -54,7 +59,13 @@ export function SetRow({ set, onUpdate, onComplete, onDelete }: SetRowProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="flex items-center gap-1.5 px-2.5 py-2 rounded-[10px] bg-bg-overlay border border-border"
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-2 rounded-[10px] border transition-colors',
+          hasValues
+            ? 'bg-[rgba(200,245,66,0.03)] border-[rgba(200,245,66,0.15)]'
+            : 'bg-transparent border-dashed border-[rgba(255,255,255,0.08)]',
+          'focus-within:border-[rgba(200,245,66,0.3)] focus-within:bg-[rgba(200,245,66,0.03)]'
+        )}
       >
         <span className="w-3.5 text-center text-xs font-mono text-text-muted shrink-0">{set.set_number}</span>
 
