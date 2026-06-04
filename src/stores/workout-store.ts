@@ -12,7 +12,7 @@ interface WorkoutStore {
   addExercise: (
     exercise: Exercise,
     workoutExerciseId: string,
-    lastSession: { weight: number; reps: number } | null
+    last: { sets: Array<{ weight: number; reps: number }>; best: { weight: number; reps: number } } | null
   ) => void;
   removeExercise: (workoutExerciseId: string) => void;
   reorderExercises: (orderedIds: string[]) => void;
@@ -39,24 +39,27 @@ export const useWorkoutStore = create<WorkoutStore>()(
       startWorkout: (id, name) =>
         set({ activeWorkout: { id, name, startedAt: new Date().toISOString(), exercises: [] } }),
 
-      addExercise: (exercise, workoutExerciseId, lastSession) =>
+      addExercise: (exercise, workoutExerciseId, last) =>
         set((state) => {
           if (!state.activeWorkout) return state;
+          // Pré-remplit autant de séries que la dernière séance, avec leurs valeurs exactes
+          const template = last?.sets?.length ? last.sets : [{ weight: 0, reps: 0 }];
+          const sets: ActiveSet[] = template.map((s, i) => ({
+            id: '',
+            tempId: generateTempId(),
+            set_number: i + 1,
+            weight: s.weight,
+            reps: s.reps,
+            completed: false,
+            saved: false,
+          }));
           const newEx: ActiveWorkoutExercise = {
             workoutExerciseId,
             exercise,
-            sets: [{
-              id: '',
-              tempId: generateTempId(),
-              set_number: 1,
-              weight: lastSession?.weight ?? 0,
-              reps: lastSession?.reps ?? 0,
-              completed: false,
-              saved: false,
-            }],
+            sets,
             notes: '',
             orderIndex: state.activeWorkout.exercises.length,
-            lastSession,
+            lastSession: last?.best ?? null,
           };
           return { activeWorkout: { ...state.activeWorkout, exercises: [...state.activeWorkout.exercises, newEx] } };
         }),

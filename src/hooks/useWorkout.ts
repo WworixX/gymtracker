@@ -9,7 +9,7 @@ export function useWorkoutActions() {
     const supabase = createClient();
     const { data } = await supabase
       .from('workout_exercises')
-      .select(`sets (weight, reps), workout:workouts!inner (user_id, ended_at)`)
+      .select(`sets (set_number, weight, reps), workout:workouts!inner (user_id, ended_at)`)
       .eq('exercise_id', exerciseId)
       .eq('workout.user_id', userId)
       .not('workout.ended_at', 'is', null)
@@ -18,10 +18,14 @@ export function useWorkoutActions() {
       .maybeSingle();
 
     if (!data) return null;
-    const sets = (data.sets ?? []) as Array<{ weight: number; reps: number }>;
-    if (!sets.length) return null;
+    const raw = (data.sets ?? []) as Array<{ set_number: number; weight: number; reps: number }>;
+    if (!raw.length) return null;
+    // Toutes les séries de la dernière séance, dans l'ordre
+    const sets = [...raw]
+      .sort((a, b) => a.set_number - b.set_number)
+      .map((s) => ({ weight: s.weight, reps: s.reps }));
     const best = sets.reduce((max, s) => (s.weight > max.weight ? s : max), sets[0]);
-    return { weight: best.weight, reps: best.reps };
+    return { sets, best };
   }, []);
 
   const createWorkout = useCallback(async (name: string) => {
