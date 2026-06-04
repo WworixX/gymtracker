@@ -68,7 +68,7 @@ export default function AuthPage() {
           <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
             <Dumbbell size={20} className="text-bg-base" strokeWidth={2.5} />
           </div>
-          <span className="font-mono text-base font-semibold uppercase tracking-widest text-text-primary">GymTracker</span>
+          <span className="font-mono text-base font-semibold uppercase tracking-widest text-text-primary">PeakLog</span>
         </div>
         <div>
           <div className="grid grid-cols-2 gap-4 mb-12">
@@ -93,7 +93,7 @@ export default function AuthPage() {
           <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center">
             <Dumbbell size={18} className="text-bg-base" strokeWidth={2.5} />
           </div>
-          <span className="font-mono text-sm font-semibold uppercase tracking-widest">GymTracker</span>
+          <span className="font-mono text-sm font-semibold uppercase tracking-widest">PeakLog</span>
         </div>
         <h1 className="font-mono text-xl font-bold text-text-primary mb-1">{mode === 'login' ? 'Connexion' : 'Créer un compte'}</h1>
         <p className="text-sm text-text-muted font-mono mb-8">{mode === 'login' ? 'Reprends là où tu t\'es arrêté.' : 'Lance-toi.'}</p>

@@ -1,24 +1,15 @@
 {
-  "name": "GymTracker",
-  "short_name": "GymTracker",
-  "description": "Suivi de séances de fitness",
-  "start_url": "/dashboard",
+  "name": "PeakLog",
+  "short_name": "PeakLog",
+  "description": "Suivi fitness personnel",
   "display": "standalone",
-  "background_color": "#0d0d0d",
-  "theme_color": "#0d0d0d",
-  "orientation": "portrait",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "background_color": "#0c0c0f",
+  "theme_color": "#0c0c0f",
+  "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

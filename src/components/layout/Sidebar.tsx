@@ -26,7 +26,7 @@ export function Sidebar() {
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
           <Dumbbell size={16} className="text-bg-base" strokeWidth={2.5} />
         </div>
-        <span className="font-mono text-sm font-semibold text-text-primary uppercase tracking-widest">GymTracker</span>
+        <span className="font-mono text-sm font-semibold text-text-primary uppercase tracking-widest">PeakLog</span>
       </div>
 
       {/* Active workout banner */}

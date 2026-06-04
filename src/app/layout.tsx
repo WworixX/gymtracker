@@ -3,10 +3,10 @@ import './globals.css';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'GymTracker',
-  description: 'Suivi de séances fitness',
+  title: 'PeakLog',
+  description: 'Suivi fitness personnel',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'GymTracker' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'PeakLog' },
 };
 
 export const viewport: Viewport = {
@@ -21,8 +21,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/icon-192.png" type="image/png" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="PeakLog" />
+        <meta name="theme-color" content="#0c0c0f" />
       </head>
       <body className="bg-ambient min-h-screen">
         <AuthProvider>{children}</AuthProvider>
