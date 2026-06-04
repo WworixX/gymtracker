@@ -73,6 +73,12 @@ export function useWorkoutActions() {
     if (error) throw error;
   }, []);
 
+  const cancelWorkout = useCallback(async (workoutId: string) => {
+    const supabase = createClient();
+    // ON DELETE CASCADE supprime workout_exercises + sets
+    await supabase.from('workouts').delete().eq('id', workoutId);
+  }, []);
+
   const checkPR = useCallback(async (exerciseId: string, weight: number, userId: string) => {
     const supabase = createClient();
     const { data } = await supabase
@@ -96,5 +102,5 @@ export function useWorkoutActions() {
     return (data ?? []) as Exercise[];
   }, []);
 
-  return { getLastSession, createWorkout, addExerciseToWorkout, saveSet, deleteSet, finishWorkout, checkPR, getUserExercises };
+  return { getLastSession, createWorkout, addExerciseToWorkout, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises };
 }

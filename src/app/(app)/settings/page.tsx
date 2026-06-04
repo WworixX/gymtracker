@@ -93,7 +93,7 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 max-w-2xl mx-auto flex flex-col gap-5">
-      <h1 className="font-mono text-xs uppercase tracking-widest text-text-secondary">Paramètres</h1>
+      <h1 className="font-mono text-xs uppercase tracking-widest text-text-secondary">Profil</h1>
       <Card>
         <CardHeader><CardTitle>Profil</CardTitle></CardHeader>
         <form onSubmit={profForm.handleSubmit(onProfileSubmit)} className="flex flex-col gap-3">
