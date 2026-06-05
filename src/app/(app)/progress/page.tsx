@@ -33,11 +33,11 @@ export default function ProgressPage() {
     (e) => e.name.toLowerCase().includes(search.toLowerCase()) && (!filterMuscle || e.muscle_group === filterMuscle)
   );
 
-  // Progression en % sur la période (max poids 1re → dernière séance)
+  // Progression en % sur la période (1RM 1re série, 1re → dernière séance)
   const first = points[0];
   const last = points[points.length - 1];
-  const pct = points.length > 1 && first && last && first.maxWeight > 0
-    ? ((last.maxWeight - first.maxWeight) / first.maxWeight) * 100
+  const pct = points.length > 1 && first && last && first.e1rm > 0
+    ? ((last.e1rm - first.e1rm) / first.e1rm) * 100
     : null;
 
   const handleCreated = async (ex: Exercise) => {
@@ -83,7 +83,8 @@ export default function ProgressPage() {
                 {pr && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <Trophy size={12} className="text-warning" />
-                    <span className="font-mono text-accent font-bold">{pr.weight} kg</span>
+                    <span className="font-mono text-accent font-bold">~{pr.weight} kg</span>
+                    <span className="text-text-muted text-[10px] font-mono">1RM</span>
                     <span className="text-text-muted text-xs font-mono">· {formatDate(pr.date)}</span>
                     {pct !== null && (
                       <span className={`text-xs font-mono ml-1 ${pct >= 0 ? 'text-success' : 'text-danger'}`}>
@@ -92,6 +93,7 @@ export default function ProgressPage() {
                     )}
                   </div>
                 )}
+                <p className="text-[10px] font-mono text-text-muted mt-1">Courbe : 1RM estimé de la 1re série</p>
               </div>
               <div className="flex gap-1">
                 {RANGES.map((r) => (
@@ -109,20 +111,18 @@ export default function ProgressPage() {
                   <thead>
                     <tr className="text-text-muted border-b border-border">
                       <th className="text-left pb-2">Date</th>
-                      <th className="text-right pb-2">Max</th>
+                      <th className="text-right pb-2">Poids (S1)</th>
+                      <th className="text-right pb-2">Reps</th>
                       <th className="text-right pb-2">1RM</th>
-                      <th className="text-right pb-2">Volume</th>
-                      <th className="text-right pb-2">Séries</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[...points].reverse().map((p, i) => (
                       <tr key={`${p.date}_${i}`} className="border-b border-border/50">
                         <td className="py-1.5 text-text-secondary">{formatDateShort(p.date)}</td>
-                        <td className="py-1.5 text-right text-accent">{p.maxWeight} kg</td>
+                        <td className="py-1.5 text-right text-accent">{p.weight} kg</td>
+                        <td className="py-1.5 text-right text-text-secondary">{p.reps}</td>
                         <td className="py-1.5 text-right text-text-secondary">~{p.e1rm} kg</td>
-                        <td className="py-1.5 text-right text-text-secondary">{p.totalVolume.toLocaleString()} kg</td>
-                        <td className="py-1.5 text-right text-text-muted">{p.sets}</td>
                       </tr>
                     ))}
                   </tbody>

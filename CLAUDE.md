@@ -77,9 +77,9 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 ### Progression
 - Sélection exercice (recherche + filtre muscle)
 - Bouton "+ Nouveau exercice" inline
-- Graphe area chart (Recharts) : max poids **par séance** (1 point/séance, pas par jour), range 1M/3M/6M/Tout
-- Ligne PR (referenceLine dashed) + **% progression** (▲▼ 1re→dernière séance)
-- Tableau historique séances (Max / 1RM estimé / Volume / Séries)
+- Graphe area chart (Recharts) : **1RM estimé de la 1re série** par séance (1 pt/séance). Capte poids ET reps → même poids + plus de reps = courbe monte. Range 1M/3M/6M/Tout
+- Ligne PR (referenceLine, meilleur 1RM) + **% progression** (▲▼ 1re→dernière séance)
+- Tableau : Date / Poids (S1) / Reps / 1RM
 - Dot activeDot avec outer glow lime
 
 ### Corps

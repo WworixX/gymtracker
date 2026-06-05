@@ -5,7 +5,7 @@ import { formatDateShort } from '@/lib/utils';
 import { ChartTooltip } from '@/components/ui/ChartTooltip';
 
 interface ProgressChartProps {
-  data: Array<{ date: string; maxWeight: number }>;
+  data: Array<{ date: string; e1rm: number }>;
   pr: { weight: number; date: string } | null;
 }
 
@@ -31,7 +31,7 @@ export function ProgressChart({ data, pr }: ProgressChartProps) {
           {pr && <ReferenceLine y={pr.weight} stroke="#c8f542" strokeDasharray="4 4" strokeOpacity={0.4} />}
           <Area
             type="monotone"
-            dataKey="maxWeight"
+            dataKey="e1rm"
             stroke="#c8f542"
             strokeWidth={2}
             fill="url(#progressFill)"

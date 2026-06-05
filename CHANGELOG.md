@@ -6,6 +6,10 @@ Format : [date] — description
 
 ## 2026-06-05
 
+### Itération 3 — progression centrée surcharge progressive
+- **Fix requête progression** : `useProgress` ordonnait sur une colonne imbriquée (`order('workout.started_at')`) → PostgREST renvoyait null → graphe toujours vide. Réécrit avec filtres/tri top-level `workouts` + embed inner (modèle dashboard)
+- **Métrique courbe = 1RM estimé de la 1re série** : on ne regarde que la 1re série (le nb de séries varie). 1RM Epley capte poids + reps → même poids avec plus de reps fait monter la courbe. Tableau : Date / Poids (S1) / Reps / 1RM. PR + % basés sur le 1RM
+
 ### Itération 2 — corrections & ajouts
 - **Fix bouton "Terminer" séance** : vert `success` incohérent → bouton primary lime (style unifié)
 - **Séries par muscle (au lieu du volume kg)** : section "Cette semaine" du dashboard affiche désormais le **nombre de séries/muscle** via barres HTML (`MuscleSetsBars`) + body map, plus de barchart kg. Recharts retiré de cette section
