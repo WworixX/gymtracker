@@ -3,7 +3,7 @@ import { formatDateShort, estimate1RM } from '@/lib/utils';
 import type { PRRecord } from '@/types';
 
 export function RecentPRs({ prs }: { prs: PRRecord[] }) {
-  if (!prs.length) return <p className="text-xs text-text-muted font-mono py-2">Aucun PR enregistré</p>;
+  if (!prs.length) return <p className="text-xs text-text-muted font-mono py-2 leading-relaxed">Aucun PR force. Passe un exercice en mode « Force » (réglages exercice) pour suivre tes records.</p>;
   return (
     <div className="flex flex-col gap-2.5">
       {prs.map((pr) => {

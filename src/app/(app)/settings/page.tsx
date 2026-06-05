@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Volume2, VolumeX, Pin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -14,13 +14,18 @@ import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { TrainingTypeField } from '@/components/features/exercises/TrainingTypeField';
+import { cn } from '@/lib/utils';
+import { isSoundEnabled, setSoundEnabled } from '@/lib/sound';
 import { MUSCLE_GROUPS } from '@/types';
-import type { Exercise, Profile } from '@/types';
+import type { Exercise } from '@/types';
 
 const exerciseSchema = z.object({
   name: z.string().min(2),
   muscle_group: z.string().min(1),
   rest_seconds: z.number().int().min(10).max(600),
+  training_type: z.enum(['force', 'hypertrophy']),
+  coach_note: z.string().max(280).optional(),
 });
 type ExerciseForm = z.infer<typeof exerciseSchema>;
 
@@ -29,6 +34,7 @@ const profileSchema = z.object({
   weight_unit: z.enum(['kg', 'lbs']),
   current_weight: z.number().optional(),
   goal_weight: z.number().optional(),
+  goal_date: z.string().optional(),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 
@@ -40,8 +46,12 @@ export default function SettingsPage() {
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const exForm = useForm<ExerciseForm>({ resolver: zodResolver(exerciseSchema), defaultValues: { rest_seconds: 90 } });
+  const exForm = useForm<ExerciseForm>({ resolver: zodResolver(exerciseSchema), defaultValues: { rest_seconds: 90, training_type: 'hypertrophy' } });
   const profForm = useForm<ProfileForm>({ resolver: zodResolver(profileSchema) });
+  const [soundOn, setSoundOn] = useState(true);
+
+  useEffect(() => { setSoundOn(isSoundEnabled()); }, []);
+  const toggleSound = () => { const next = !soundOn; setSoundOn(next); setSoundEnabled(next); };
 
   useEffect(() => {
     async function load() {
@@ -52,24 +62,25 @@ export default function SettingsPage() {
         supabase.from('profiles').select('*').eq('id', user.id).single(),
       ]);
       setExercises((exData ?? []) as Exercise[]);
-      if (profData) profForm.reset({ username: profData.username ?? '', weight_unit: profData.weight_unit as 'kg' | 'lbs', current_weight: profData.current_weight ?? undefined, goal_weight: profData.goal_weight ?? undefined });
+      if (profData) profForm.reset({ username: profData.username ?? '', weight_unit: profData.weight_unit as 'kg' | 'lbs', current_weight: profData.current_weight ?? undefined, goal_weight: profData.goal_weight ?? undefined, goal_date: profData.goal_date ?? '' });
       setLoading(false);
     }
     load();
   }, [user, profForm]);
 
-  const openCreate = () => { setEditingExercise(null); exForm.reset({ rest_seconds: 90 }); setExerciseModalOpen(true); };
-  const openEdit = (ex: Exercise) => { setEditingExercise(ex); exForm.reset({ name: ex.name, muscle_group: ex.muscle_group, rest_seconds: ex.rest_seconds }); setExerciseModalOpen(true); };
+  const openCreate = () => { setEditingExercise(null); exForm.reset({ rest_seconds: 90, training_type: 'hypertrophy', coach_note: '' }); setExerciseModalOpen(true); };
+  const openEdit = (ex: Exercise) => { setEditingExercise(ex); exForm.reset({ name: ex.name, muscle_group: ex.muscle_group, rest_seconds: ex.rest_seconds, training_type: ex.training_type, coach_note: ex.coach_note ?? '' }); setExerciseModalOpen(true); };
 
   const onExerciseSubmit = async (data: ExerciseForm) => {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
+    const payload = { ...data, coach_note: data.coach_note?.trim() || null };
     if (editingExercise) {
-      const { data: updated } = await supabase.from('exercises').update(data).eq('id', editingExercise.id).select().single();
+      const { data: updated } = await supabase.from('exercises').update(payload).eq('id', editingExercise.id).select().single();
       if (updated) setExercises((prev) => prev.map((e) => (e.id === updated.id ? updated as Exercise : e)));
     } else {
-      const { data: created } = await supabase.from('exercises').insert({ ...data, user_id: user.id }).select().single();
+      const { data: created } = await supabase.from('exercises').insert({ ...payload, user_id: user.id }).select().single();
       if (created) setExercises((prev) => [...prev, created as Exercise].sort((a, b) => a.name.localeCompare(b.name)));
     }
     setSaving(false);
@@ -86,7 +97,14 @@ export default function SettingsPage() {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
-    await supabase.from('profiles').update(data).eq('id', user.id);
+    const payload = {
+      username: data.username?.trim() || null,
+      weight_unit: data.weight_unit,
+      current_weight: Number.isFinite(data.current_weight) ? data.current_weight : null,
+      goal_weight: Number.isFinite(data.goal_weight) ? data.goal_weight : null,
+      goal_date: data.goal_date ? data.goal_date : null,
+    };
+    await supabase.from('profiles').update(payload).eq('id', user.id);
     setSaving(false);
   };
 
@@ -103,6 +121,7 @@ export default function SettingsPage() {
             <Input label="Poids actuel" type="number" step="0.1" suffix="kg" {...profForm.register('current_weight', { valueAsNumber: true })} />
             <Input label="Objectif" type="number" step="0.1" suffix="kg" {...profForm.register('goal_weight', { valueAsNumber: true })} />
           </div>
+          <Input label="Date objectif" type="date" {...profForm.register('goal_date')} />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-mono uppercase tracking-widest text-text-secondary">Unités</label>
             <div className="flex gap-4">
@@ -118,6 +137,24 @@ export default function SettingsPage() {
         </form>
       </Card>
       <Card>
+        <CardHeader><CardTitle>Préférences</CardTitle></CardHeader>
+        <button
+          onClick={toggleSound}
+          className="w-full flex items-center justify-between px-3 py-2.5 bg-bg-overlay rounded-lg border border-transparent hover:border-border transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            {soundOn ? <Volume2 size={16} className="text-accent" /> : <VolumeX size={16} className="text-text-muted" />}
+            <div className="text-left">
+              <p className="text-sm text-text-primary">Sons de surcharge progressive</p>
+              <p className="text-[10px] font-mono text-text-muted">Signal sonore à la validation d&apos;une série</p>
+            </div>
+          </div>
+          <span className={cn('relative w-10 h-6 rounded-full transition-colors shrink-0', soundOn ? 'bg-accent' : 'bg-bg-hover')}>
+            <span className={cn('absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform', soundOn && 'translate-x-4')} />
+          </span>
+        </button>
+      </Card>
+      <Card>
         <CardHeader>
           <CardTitle>Exercices ({exercises.length})</CardTitle>
           <Button size="sm" onClick={openCreate}><Plus size={13} /> Nouveau</Button>
@@ -128,7 +165,11 @@ export default function SettingsPage() {
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm text-text-primary truncate">{ex.name}</span>
                 <Badge variant="muscle">{ex.muscle_group}</Badge>
-                <span className="text-[10px] font-mono text-text-muted">{ex.rest_seconds}s</span>
+                {ex.training_type === 'force' && (
+                  <span className="text-[9px] font-sans font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-warning/30 text-warning bg-warning/10 shrink-0">Force</span>
+                )}
+                {ex.coach_note && <Pin size={11} className="text-accent shrink-0" />}
+                <span className="text-[10px] font-mono text-text-muted shrink-0">{ex.rest_seconds}s</span>
               </div>
               <div className="flex gap-1 ml-2 shrink-0">
                 <button onClick={() => openEdit(ex)} className="w-7 h-7 flex items-center justify-center text-text-muted hover:text-text-primary rounded transition-colors"><Edit2 size={13} /></button>
@@ -153,6 +194,17 @@ export default function SettingsPage() {
             </select>
           </div>
           <Input label="Repos" type="number" suffix="s" {...exForm.register('rest_seconds', { valueAsNumber: true })} error={exForm.formState.errors.rest_seconds?.message} />
+          <TrainingTypeField field={exForm.register('training_type')} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-mono uppercase tracking-widest text-text-secondary">Note épinglée (optionnel)</label>
+            <textarea
+              {...exForm.register('coach_note')}
+              maxLength={280}
+              rows={2}
+              placeholder="Ex: réglages machine, rappel technique…"
+              className="w-full bg-bg-overlay border border-border rounded-lg p-2.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-active resize-none font-mono"
+            />
+          </div>
           <Button type="submit" loading={saving} fullWidth>{editingExercise ? 'Mettre à jour' : 'Créer'}</Button>
         </form>
       </Modal>

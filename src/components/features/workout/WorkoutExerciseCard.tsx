@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ChevronDown, Timer } from 'lucide-react';
+import { Plus, ChevronDown, Timer, Pin } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { SetRow } from './SetRow';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { useWorkoutActions } from '@/hooks/useWorkout';
-import { cn } from '@/lib/utils';
-import type { ActiveWorkoutExercise } from '@/types';
+import { cn, getSetTrend } from '@/lib/utils';
+import { playTrendCue } from '@/lib/sound';
+import type { ActiveWorkoutExercise, SetTrend } from '@/types';
 import confetti from 'canvas-confetti';
 
 export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: ActiveWorkoutExercise; userId: string; dragHandle?: React.ReactNode }) {
@@ -16,21 +17,38 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
   const [restSeconds, setRestSeconds] = useState(item.exercise.rest_seconds ?? 120);
   const [editingRest, setEditingRest] = useState(false);
   const [prSets, setPrSets] = useState<Set<string>>(new Set());
+  const [trends, setTrends] = useState<Map<string, SetTrend>>(new Map());
+  const [coachNote, setCoachNote] = useState(item.exercise.coach_note ?? '');
+  const [editingCoach, setEditingCoach] = useState(false);
   const { addSet, updateSet, completeSet, deleteSet, markSetSaved, updateExerciseNotes, startRestTimer } = useWorkoutStore();
-  const { saveSet, deleteSet: deleteSetDB, checkPR } = useWorkoutActions();
+  const { saveSet, deleteSet: deleteSetDB, checkPR, updateExerciseNote } = useWorkoutActions();
+
+  const isForce = item.exercise.training_type === 'force';
 
   const handleComplete = async (tempId: string) => {
     const s = item.sets.find((s) => s.tempId === tempId);
     if (!s) return;
     completeSet(item.workoutExerciseId, tempId);
     startRestTimer(restSeconds);
+
+    // Surcharge progressive — tendance vs la même série de la dernière séance
+    const prev = item.lastSets?.[s.set_number - 1] ?? null;
+    const trend = getSetTrend({ weight: s.weight, reps: s.reps }, prev);
+    if (trend) {
+      setTrends((m) => new Map(m).set(tempId, trend));
+      playTrendCue(trend);
+    }
+
     try {
       const saved = await saveSet(item.workoutExerciseId, s.set_number, s.weight, s.reps);
       markSetSaved(item.workoutExerciseId, tempId, saved.id);
-      const isPR = await checkPR(item.exercise.id, s.weight, userId);
-      if (isPR) {
-        setPrSets((prev) => new Set(prev).add(tempId));
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#c8f542', '#ffffff', '#9bbf2e'] });
+      // PR (record absolu) pertinent uniquement pour les exercices en mode force
+      if (isForce) {
+        const isPR = await checkPR(item.exercise.id, s.weight, userId);
+        if (isPR) {
+          setPrSets((prev) => new Set(prev).add(tempId));
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#c8f542', '#ffffff', '#9bbf2e'] });
+        }
       }
     } catch {}
   };
@@ -39,6 +57,11 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
     const s = item.sets.find((s) => s.tempId === tempId);
     if (s?.id) deleteSetDB(s.id).catch(() => {});
     deleteSet(item.workoutExerciseId, tempId);
+  };
+
+  const saveCoachNote = () => {
+    setEditingCoach(false);
+    updateExerciseNote(item.exercise.id, coachNote).catch(() => {});
   };
 
   const completedCount = item.sets.filter((s) => s.completed).length;
@@ -54,6 +77,11 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
             <span className="text-base font-medium text-text-primary">{item.exercise.name}</span>
             <div className="flex items-center gap-2 mt-1.5">
               <Badge variant="muscle">{item.exercise.muscle_group}</Badge>
+              {isForce && (
+                <span className="text-[9px] font-sans font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-warning/30 text-warning bg-warning/10">
+                  Force
+                </span>
+              )}
               {completedCount > 0 && (
                 <span className="text-[10px] font-mono text-accent uppercase tracking-wider">
                   {completedCount} série{completedCount > 1 ? 's' : ''} ✓
@@ -88,6 +116,38 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
           </div>
         </div>
 
+        {/* Note épinglée (réglages machine, mémo prochaine fois) */}
+        {editingCoach ? (
+          <div className="flex items-start gap-2 rounded-[10px] px-3 py-2" style={{ background: 'rgba(200,245,66,0.05)', border: '0.5px solid rgba(200,245,66,0.18)' }}>
+            <Pin size={13} className="text-accent mt-1 shrink-0" />
+            <textarea
+              value={coachNote}
+              onChange={(e) => setCoachNote(e.target.value)}
+              onBlur={saveCoachNote}
+              placeholder="Ex: siège position 4, prise serrée…"
+              maxLength={280}
+              autoFocus
+              rows={2}
+              className="flex-1 bg-transparent text-xs text-text-primary placeholder:text-text-muted focus:outline-none resize-none font-mono leading-relaxed"
+            />
+          </div>
+        ) : coachNote ? (
+          <button
+            onClick={() => setEditingCoach(true)}
+            className="w-full flex items-start gap-2 rounded-[10px] px-3 py-2 text-left transition-colors hover:brightness-110"
+            style={{ background: 'rgba(200,245,66,0.05)', border: '0.5px solid rgba(200,245,66,0.18)' }}
+          >
+            <Pin size={13} className="text-accent mt-0.5 shrink-0" />
+            <span className="flex-1 text-xs text-text-secondary font-mono leading-relaxed whitespace-pre-wrap">{coachNote}</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setEditingCoach(true)}
+            className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-text-muted hover:text-accent transition-colors"
+          >
+            <Pin size={11} /> Épingler une note
+          </button>
+        )}
       </div>
 
       {/* Sets */}
@@ -97,6 +157,7 @@ export function WorkoutExerciseCard({ item, userId, dragHandle }: { item: Active
             key={s.tempId}
             set={s}
             isPR={prSets.has(s.tempId)}
+            trend={trends.get(s.tempId) ?? null}
             onUpdate={(field, value) => updateSet(item.workoutExerciseId, s.tempId, field, value)}
             onComplete={() => handleComplete(s.tempId)}
             onDelete={() => handleDelete(s.tempId)}

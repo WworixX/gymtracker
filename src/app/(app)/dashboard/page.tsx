@@ -13,6 +13,7 @@ import { RecentPRs } from '@/components/features/dashboard/RecentPRs';
 
 const WeightSparkline = dynamic(() => import('@/components/features/dashboard/WeightSparkline').then((m) => m.WeightSparkline), { ssr: false, loading: () => <div className="h-14" /> });
 const VolumeChart = dynamic(() => import('@/components/features/dashboard/VolumeChart').then((m) => m.VolumeChart), { ssr: false, loading: () => <div className="h-36" /> });
+import { MuscleHeatmap } from '@/components/features/dashboard/MuscleHeatmap';
 import { TemplatesSection } from '@/components/features/dashboard/TemplatesSection';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useWorkoutStore } from '@/stores/workout-store';
@@ -50,7 +51,7 @@ function StatCard({ label, value, unit, icon, accent }: { label: string; value: 
 }
 
 export default function DashboardPage() {
-  const { totalWorkouts, lastWorkout, recentPRs, volumeByMuscle, loading } = useDashboard();
+  const { totalWorkouts, lastWorkout, recentPRs, volumeByMuscle, setsByMuscle, weeklySets, loading } = useDashboard();
   const { startWorkout, activeWorkout } = useWorkoutStore();
   const { createWorkout } = useWorkoutActions();
   const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
@@ -203,19 +204,32 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* PRs */}
+      {/* PRs Force */}
       <motion.div custom={5} variants={fadeUp} initial="hidden" animate="show">
         <Card>
-          <CardHeader><CardTitle>PRs récents</CardTitle><Trophy size={14} className="text-accent" /></CardHeader>
+          <CardHeader><CardTitle>PRs Force</CardTitle><Trophy size={14} className="text-accent" /></CardHeader>
           <RecentPRs prs={recentPRs} />
         </Card>
       </motion.div>
 
-      {/* Volume par muscle */}
-      {Object.keys(volumeByMuscle).length > 0 && (
+      {/* Charge par muscle — semaine en cours */}
+      {weeklySets > 0 && (
         <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show">
           <Card>
-            <CardHeader><CardTitle>Volume par muscle (7j)</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Cette semaine</CardTitle>
+              <span className="text-xs font-mono text-text-muted">{weeklySets} série{weeklySets > 1 ? 's' : ''}</span>
+            </CardHeader>
+            <MuscleHeatmap setsByMuscle={setsByMuscle} />
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Volume par muscle — semaine en cours */}
+      {Object.keys(volumeByMuscle).length > 0 && (
+        <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show">
+          <Card>
+            <CardHeader><CardTitle>Volume par muscle (cette semaine)</CardTitle></CardHeader>
             <VolumeChart data={volumeByMuscle} />
           </Card>
         </motion.div>

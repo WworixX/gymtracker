@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { createClient } from '@/lib/supabase/client';
+import { TrainingTypeField } from '@/components/features/exercises/TrainingTypeField';
 import { MUSCLE_GROUPS } from '@/types';
 import type { Exercise, MuscleGroup } from '@/types';
 
@@ -18,6 +19,7 @@ const newExerciseSchema = z.object({
   name: z.string().min(2, 'Nom requis'),
   muscle_group: z.string().min(1, 'Requis'),
   rest_seconds: z.number().int().min(10).max(600),
+  training_type: z.enum(['force', 'hypertrophy']),
 });
 type NewExerciseForm = z.infer<typeof newExerciseSchema>;
 
@@ -38,7 +40,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [] }: Ex
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<NewExerciseForm>({
     resolver: zodResolver(newExerciseSchema),
-    defaultValues: { rest_seconds: 90 },
+    defaultValues: { rest_seconds: 90, training_type: 'hypertrophy' },
   });
 
   const loadExercises = useCallback(async () => {
@@ -90,6 +92,7 @@ export function ExercisePicker({ open, onClose, onSelect, selectedIds = [] }: Ex
             {errors.muscle_group && <p className="text-xs text-danger">{errors.muscle_group.message}</p>}
           </div>
           <Input label="Repos (secondes)" type="number" suffix="s" {...register('rest_seconds', { valueAsNumber: true })} error={errors.rest_seconds?.message} />
+          <TrainingTypeField field={register('training_type')} />
           <Button type="submit" loading={creating} fullWidth>Créer</Button>
         </form>
       ) : (

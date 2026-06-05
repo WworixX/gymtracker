@@ -27,12 +27,15 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
   'Full Body',
 ];
 
+export type TrainingType = 'force' | 'hypertrophy';
+
 export interface Profile {
   id: string;
   username: string | null;
   weight_unit: 'kg' | 'lbs';
   current_weight: number | null;
   goal_weight: number | null;
+  goal_date: string | null;
   created_at: string;
 }
 
@@ -42,6 +45,8 @@ export interface Exercise {
   name: string;
   muscle_group: MuscleGroup;
   rest_seconds: number;
+  training_type: TrainingType;
+  coach_note: string | null;
   created_at: string;
 }
 
@@ -123,6 +128,9 @@ export interface ActiveSet {
   saved: boolean;
 }
 
+/** Tendance d'une série vs la même série de la dernière séance (surcharge progressive). */
+export type SetTrend = 'up' | 'equal' | 'down';
+
 export interface ActiveWorkoutExercise {
   workoutExerciseId: string;
   exercise: Exercise;
@@ -130,6 +138,8 @@ export interface ActiveWorkoutExercise {
   notes: string;
   orderIndex: number;
   lastSession: { weight: number; reps: number } | null;
+  /** Toutes les séries de la dernière séance (index = n° série - 1), pour comparer série à série. */
+  lastSets: Array<{ weight: number; reps: number }> | null;
 }
 
 export interface ActiveWorkout {

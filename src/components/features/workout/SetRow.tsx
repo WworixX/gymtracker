@@ -1,25 +1,44 @@
 'use client';
 
-import { Check, Trash2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Check, Trash2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { ActiveSet } from '@/types';
+import type { ActiveSet, SetTrend } from '@/types';
 
 interface SetRowProps {
   set: ActiveSet;
   isPR?: boolean;
+  trend?: SetTrend | null;
   onUpdate: (field: 'weight' | 'reps', value: number) => void;
   onComplete: () => void;
   onDelete: () => void;
 }
 
-export function SetRow({ set, isPR, onUpdate, onComplete, onDelete }: SetRowProps) {
+const TREND_META: Record<SetTrend, { Icon: typeof TrendingUp; color: string; label: string }> = {
+  up: { Icon: TrendingUp, color: '#22c55e', label: 'Mieux que la dernière fois' },
+  equal: { Icon: Minus, color: '#6f6f80', label: 'Égal à la dernière fois' },
+  down: { Icon: TrendingDown, color: '#f59e0b', label: 'En dessous de la dernière fois' },
+};
+
+export function SetRow({ set, isPR, trend, onUpdate, onComplete, onDelete }: SetRowProps) {
+  const reduceMotion = useReducedMotion();
+
   if (set.completed) {
+    // Flash de fond : PR (lime fort) > progression (vert doux) > neutre
+    const flash = reduceMotion
+      ? { opacity: 1, scale: 1 }
+      : isPR
+        ? { opacity: 1, scale: 1, backgroundColor: ['rgba(200,245,66,0.055)', 'rgba(200,245,66,0.2)', 'rgba(200,245,66,0.055)'] }
+        : trend === 'up'
+          ? { opacity: 1, scale: 1, backgroundColor: ['rgba(34,197,94,0.06)', 'rgba(34,197,94,0.18)', 'rgba(34,197,94,0.06)'] }
+          : { opacity: 1, scale: 1 };
+    const t = trend ? TREND_META[trend] : null;
+
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
-        animate={isPR ? { opacity: 1, scale: 1, backgroundColor: ['rgba(200,245,66,0.055)', 'rgba(200,245,66,0.2)', 'rgba(200,245,66,0.055)'] } : { opacity: 1, scale: 1 }}
-        transition={{ duration: isPR ? 0.6 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+        animate={flash}
+        transition={{ duration: isPR || trend === 'up' ? 0.6 : 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="flex items-center gap-3 px-3.5 h-11 rounded-[10px] border"
         style={{ background: 'rgba(200,245,66,0.055)', borderColor: 'rgba(200,245,66,0.12)' }}
       >
@@ -28,6 +47,22 @@ export function SetRow({ set, isPR, onUpdate, onComplete, onDelete }: SetRowProp
           <Check size={13} className="text-accent" strokeWidth={3} style={{ filter: 'drop-shadow(0 0 8px rgba(200,245,66,0.4))' }} />
         </motion.span>
         <span className="font-mono text-sm text-accent truncate">{set.weight} kg × {set.reps} reps</span>
+
+        {/* Tendance surcharge progressive vs dernière séance */}
+        {t && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1.25, 1], opacity: 1 }}
+            transition={{ duration: 0.35, ease: 'backOut' }}
+            className="shrink-0 inline-flex items-center"
+            style={{ color: t.color }}
+            title={t.label}
+            aria-label={t.label}
+          >
+            <t.Icon size={15} strokeWidth={2.5} style={trend === 'up' ? { filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.5))' } : undefined} />
+          </motion.span>
+        )}
+
         {isPR && (
           <motion.span
             initial={{ scale: 0 }}

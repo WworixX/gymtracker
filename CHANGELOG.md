@@ -6,6 +6,14 @@ Format : [date] — description
 
 ## 2026-06-05
 
+### Fonctionnalités majeures (surcharge progressive & co)
+- **Feedback surcharge progressive** : à la validation d'une série, comparaison au même n° de série de la dernière séance via **1RM estimé Epley**. 3 états → flèche ↑ verte + flash + son montant (mieux), `=` neutre (égal, silencieux), flèche ↓ ambre + son grave (moins bien). `getSetTrend` dans `utils`. `lastSets` (toutes les séries de la dernière séance) ajouté à `ActiveWorkoutExercise` pour la compare série-à-série
+- **Sons synthétisés** `lib/sound.ts` : Web Audio API (zéro fichier), arpège/note + `navigator.vibrate`. Toggle on/off dans Profil (persisté localStorage `peaklog-sound`). Respecte `prefers-reduced-motion` pour les flashs
+- **Mode Force / Hypertrophie par exercice** (`exercises.training_type`) : le badge `🏆 PR` + confetti ne se déclenchent QUE pour les exos **force** (record absolu pertinent). Les exos **hypertrophie** utilisent le feedback de progression vs dernière fois. Sélecteur `TrainingTypeField` réutilisable (séance picker, settings, progression). Dashboard "PRs Force" filtré sur les exos force. Compounds seedés en force
+- **Notes épinglées par exercice** (`exercises.coach_note`) : note persistante (réglages machine, mémo), affichée en haut de la `WorkoutExerciseCard` (icône 📌), éditable inline + dans la modale settings. Distincte des notes de séance
+- **Objectif poids + trajectoire** (`profiles.goal_date`) : carte dans Corps>Poids → restant, rythme requis vs rythme actuel (régression linéaire `linregSlopePerWeek`), projection à l'échéance, statut (en avance / sur la bonne voie / en retard), ETA si pas de date. Ligne `Objectif` (ReferenceLine) sur le graphe
+- **Volume hebdo (lundi→dimanche) + body map** : agrégats passés de 7j glissants à la **semaine ISO** (`startOfISOWeek`). Nouveau composant `MuscleHeatmap` (silhouette SVG face + dos, chaque muscle teinté gris→lime→ambre selon le nb de séries de la semaine). `setsByMuscle` + `weeklySets` dans `useDashboard`
+
 ### Infra / Sécurité
 - **Security headers** (next.config.js) : X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy, Permissions-Policy, HSTS 2 ans — vérifiés en prod
 - **next/font** : migration Google Fonts `@import` (render-blocking) → next/font auto-hébergé (Outfit + DM Mono), `display:swap`

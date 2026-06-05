@@ -8,6 +8,7 @@ create table public.profiles (
   weight_unit text not null default 'kg' check (weight_unit in ('kg', 'lbs')),
   current_weight numeric,
   goal_weight numeric,
+  goal_date date,
   created_at timestamptz not null default now()
 );
 
@@ -46,6 +47,8 @@ create table public.exercises (
   name text not null,
   muscle_group text not null,
   rest_seconds integer not null default 90,
+  training_type text not null default 'hypertrophy' check (training_type in ('force', 'hypertrophy')),
+  coach_note text,
   created_at timestamptz not null default now()
 );
 
@@ -60,27 +63,27 @@ create policy "Users manage own exercises"
 create or replace function public.seed_default_exercises(p_user_id uuid)
 returns void as $$
 begin
-  insert into public.exercises (user_id, name, muscle_group, rest_seconds) values
-    (p_user_id, 'Développé couché', 'Pecs', 120),
-    (p_user_id, 'Développé incliné', 'Pecs', 120),
-    (p_user_id, 'Écarté poulie', 'Pecs', 90),
-    (p_user_id, 'Tractions', 'Dos', 120),
-    (p_user_id, 'Rowing barre', 'Dos', 120),
-    (p_user_id, 'Tirage poulie haute', 'Dos', 90),
-    (p_user_id, 'Développé militaire', 'Épaules', 120),
-    (p_user_id, 'Élévations latérales', 'Épaules', 60),
-    (p_user_id, 'Curl barre', 'Biceps', 90),
-    (p_user_id, 'Curl haltère', 'Biceps', 60),
-    (p_user_id, 'Dips', 'Triceps', 90),
-    (p_user_id, 'Extensions triceps poulie', 'Triceps', 60),
-    (p_user_id, 'Squat barre', 'Quadriceps', 180),
-    (p_user_id, 'Presse à cuisses', 'Quadriceps', 120),
-    (p_user_id, 'Leg curl', 'Ischio-jambiers', 90),
-    (p_user_id, 'Soulevé de terre', 'Dos', 180),
-    (p_user_id, 'Hip thrust', 'Fessiers', 120),
-    (p_user_id, 'Mollets debout', 'Mollets', 60),
-    (p_user_id, 'Crunch', 'Abdos', 60),
-    (p_user_id, 'Planche', 'Abdos', 60);
+  insert into public.exercises (user_id, name, muscle_group, rest_seconds, training_type) values
+    (p_user_id, 'Développé couché', 'Pecs', 120, 'force'),
+    (p_user_id, 'Développé incliné', 'Pecs', 120, 'force'),
+    (p_user_id, 'Écarté poulie', 'Pecs', 90, 'hypertrophy'),
+    (p_user_id, 'Tractions', 'Dos', 120, 'force'),
+    (p_user_id, 'Rowing barre', 'Dos', 120, 'force'),
+    (p_user_id, 'Tirage poulie haute', 'Dos', 90, 'hypertrophy'),
+    (p_user_id, 'Développé militaire', 'Épaules', 120, 'force'),
+    (p_user_id, 'Élévations latérales', 'Épaules', 60, 'hypertrophy'),
+    (p_user_id, 'Curl barre', 'Biceps', 90, 'hypertrophy'),
+    (p_user_id, 'Curl haltère', 'Biceps', 60, 'hypertrophy'),
+    (p_user_id, 'Dips', 'Triceps', 90, 'hypertrophy'),
+    (p_user_id, 'Extensions triceps poulie', 'Triceps', 60, 'hypertrophy'),
+    (p_user_id, 'Squat barre', 'Quadriceps', 180, 'force'),
+    (p_user_id, 'Presse à cuisses', 'Quadriceps', 120, 'hypertrophy'),
+    (p_user_id, 'Leg curl', 'Ischio-jambiers', 90, 'hypertrophy'),
+    (p_user_id, 'Soulevé de terre', 'Dos', 180, 'force'),
+    (p_user_id, 'Hip thrust', 'Fessiers', 120, 'force'),
+    (p_user_id, 'Mollets debout', 'Mollets', 60, 'hypertrophy'),
+    (p_user_id, 'Crunch', 'Abdos', 60, 'hypertrophy'),
+    (p_user_id, 'Planche', 'Abdos', 60, 'hypertrophy');
 end;
 $$ language plpgsql security definer;
 

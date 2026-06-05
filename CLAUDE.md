@@ -44,8 +44,9 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 - **Poids du jour** — saisie rapide + sparkline 7j
 - **Mes programmes** — liste des templates avec bouton Lancer
 - **Dernière séance** — nom, date, exercices
-- **PRs récents** — avec 1RM estimé Epley affiché sous chaque PR
-- **Volume par muscle** (7j) — barchart horizontal
+- **PRs Force** — records des exos en mode force, avec 1RM estimé Epley
+- **Cette semaine** — body map SVG (face + dos), muscles teintés selon le nb de séries de la semaine ISO (`MuscleHeatmap`)
+- **Volume par muscle** (semaine ISO lundi→dim) — barchart horizontal
 
 ### Séance active `/workout/[id]`
 - Header sticky : bouton annuler | nom séance + chrono live (DM Mono, glow lime) | bouton Terminer (rouge)
@@ -56,7 +57,9 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
   - Temps de repos éditable inline (tap → input → Enter)
   - Sets rows : numéro | input poids (kg) | × | input reps | 🗑 supprimer | ✓ valider
   - 3 états visuels : vide (dashed border), en cours (accent border), validé (fond lime ghost + check animé)
-  - Badge PR animé `🏆 PR` avec scale bounce + confetti si nouveau PR
+  - Badge PR animé `🏆 PR` avec scale bounce + confetti — **uniquement pour les exos en mode force** (record absolu pertinent)
+  - **Feedback surcharge progressive** : à la validation, flèche ↑/=/↓ + flash + son selon le 1RM estimé vs la même série de la dernière séance (`getSetTrend`)
+  - **Note épinglée** (📌) par exercice : réglages machine / mémo persistant (`coach_note`), distincte des notes de séance
   - Bouton `+ Ajouter une série`
   - Notes collapsibles (maxLength 500)
 - **RestTimer** : pilule flottante bas d'écran, barre progression colorée (vert→orange→rouge), chiffre glow, pulse animation, vibration navigator à 0s
@@ -79,14 +82,15 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 
 ### Corps
 - 4 onglets : Poids | Mensurations | Photos | Macros
-- **Poids** : saisie + historique + area chart gradient lime
+- **Poids** : saisie + historique + area chart gradient lime + **trajectoire objectif** (rythme requis vs actuel par régression, projection, statut, ligne objectif sur le graphe)
 - **Mensurations** : log body measurements
 - **Photos** : grid photos progression (Supabase Storage)
 - **Macros** : calories/protéines/glucides/lipides par jour + barchart
 
 ### Profil (Settings)
-- Édition pseudo, poids actuel, objectif poids, unité kg/lbs
-- Gestion exercices (CRUD complet)
+- Édition pseudo, poids actuel, objectif poids + **date objectif**, unité kg/lbs
+- **Préférences** : toggle sons de surcharge progressive
+- Gestion exercices (CRUD complet) — avec **type d'entraînement** (force/hypertrophie) + **note épinglée**
 - Déconnexion
 
 ### Auth
@@ -105,8 +109,8 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 ## Base de données (Supabase)
 
 ### Tables principales
-- `profiles` — liées à auth.users, trigger auto-création
-- `exercises` — par user (seedées au signup avec 20 exercices par défaut)
+- `profiles` — liées à auth.users, trigger auto-création. Colonnes : `goal_weight`, `goal_date`, `current_weight`, `weight_unit`
+- `exercises` — par user (seedées au signup avec 20 exercices par défaut). Colonnes : `training_type` ('force'|'hypertrophy', défaut hypertrophy), `coach_note` (note épinglée)
 - `workouts` — séances (started_at / ended_at)
 - `workout_exercises` — liaison workout ↔ exercise (order_index)
 - `sets` — séries (set_number, weight, reps)
@@ -144,12 +148,17 @@ Système global `ToastProvider` (top-center, glassmorphism, auto-dismiss 3.2s). 
 - `getLastSession` retourne `{ sets: [], best: {} }` (toutes séries, pas juste la meilleure)
 - Charts en `next/dynamic` ssr:false (lazy-load Recharts)
 - Zustand localStorage key = `gymtracker-workout` (intentionnellement pas renommé pour éviter perte de sessions en cours)
+- **Surcharge progressive** : métrique = 1RM estimé Epley (`estimate1RM`), `getSetTrend` compare série n° vs `lastSets[n-1]`. Aucun jugement si pas de référence (1re fois / série en plus)
+- **PR vs progression** : `🏆 PR` (record absolu) réservé aux exos `training_type === 'force'`. Les exos hypertrophie s'appuient sur le feedback de tendance + volume
+- **Sons** : `lib/sound.ts` Web Audio synthétisé (pas de fichiers), toggle localStorage `peaklog-sound`. Joué au gesture de validation (l'AudioContext peut démarrer)
+- **Semaine = ISO lundi→dimanche** (`startOfISOWeek`) pour les agrégats dashboard, pas du 7j glissant
+- **Migration DB** : exécuter `supabase/migrations/2026-06-05_progressive-overload.sql` dans le SQL Editor (idempotent) pour ajouter `training_type`/`coach_note`/`goal_date` à la base existante
 
 ## Ce qui reste à faire (backlog)
 - SWR ou React Query pour cache/dedup des fetches
 - Types générés Supabase (`supabase gen types`) pour remplacer les casts `any`
 - Récap post-séance (PRs battus, durée totale, volume)
-- Heatmap calendrier séances (Historique)
+- Heatmap calendrier séances (Historique) — vue type GitHub (distincte du body map muscles)
 - Plates calculator (disques à mettre sur barre)
 - Notifications push PWA (rappels, fin timer)
-- Comparaison séances (cette fois vs dernière)
+- Comparaison séances complète (récap global cette fois vs dernière) — feedback par-série déjà en place

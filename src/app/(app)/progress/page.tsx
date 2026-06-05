@@ -12,7 +12,7 @@ import { PageTransition } from '@/components/ui/PageTransition';
 
 const ProgressChart = dynamic(() => import('@/components/features/progress/ProgressChart').then((m) => m.ProgressChart), { ssr: false, loading: () => <div className="h-52" /> });
 import { useProgress, useExerciseList } from '@/hooks/useProgress';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateShort } from '@/lib/utils';
 import type { Exercise } from '@/types';
 
 type TimeRange = '1m' | '3m' | '6m' | 'all';
@@ -28,6 +28,13 @@ export default function ProgressPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const { points, pr, loading: dataLoading } = useProgress(selectedExercise?.id ?? null, range);
   const filtered = exercises.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));
+
+  // Progression en % sur la période (max poids 1re → dernière séance)
+  const first = points[0];
+  const last = points[points.length - 1];
+  const pct = points.length > 1 && first && last && first.maxWeight > 0
+    ? ((last.maxWeight - first.maxWeight) / first.maxWeight) * 100
+    : null;
 
   const handleCreated = async (ex: Exercise) => {
     await reload();
@@ -64,10 +71,15 @@ export default function ProgressPage() {
               <div>
                 <CardTitle>{selectedExercise.name}</CardTitle>
                 {pr && (
-                  <div className="flex items-center gap-1.5 mt-1">
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <Trophy size={12} className="text-warning" />
                     <span className="font-mono text-accent font-bold">{pr.weight} kg</span>
                     <span className="text-text-muted text-xs font-mono">· {formatDate(pr.date)}</span>
+                    {pct !== null && (
+                      <span className={`text-xs font-mono ml-1 ${pct >= 0 ? 'text-success' : 'text-danger'}`}>
+                        {pct >= 0 ? '▲' : '▼'} {Math.abs(pct).toFixed(1)}%
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -88,15 +100,17 @@ export default function ProgressPage() {
                     <tr className="text-text-muted border-b border-border">
                       <th className="text-left pb-2">Date</th>
                       <th className="text-right pb-2">Max</th>
+                      <th className="text-right pb-2">1RM</th>
                       <th className="text-right pb-2">Volume</th>
                       <th className="text-right pb-2">Séries</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {[...points].reverse().map((p) => (
-                      <tr key={p.date} className="border-b border-border/50">
-                        <td className="py-1.5 text-text-secondary">{p.date}</td>
+                    {[...points].reverse().map((p, i) => (
+                      <tr key={`${p.date}_${i}`} className="border-b border-border/50">
+                        <td className="py-1.5 text-text-secondary">{formatDateShort(p.date)}</td>
                         <td className="py-1.5 text-right text-accent">{p.maxWeight} kg</td>
+                        <td className="py-1.5 text-right text-text-secondary">~{p.e1rm} kg</td>
                         <td className="py-1.5 text-right text-text-secondary">{p.totalVolume.toLocaleString()} kg</td>
                         <td className="py-1.5 text-right text-text-muted">{p.sets}</td>
                       </tr>

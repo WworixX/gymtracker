@@ -113,5 +113,10 @@ export function useWorkoutActions() {
     return (data ?? []) as Exercise[];
   }, []);
 
-  return { getLastSession, createWorkout, addExerciseToWorkout, reorderExercisesDB, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises };
+  const updateExerciseNote = useCallback(async (exerciseId: string, note: string) => {
+    const supabase = createClient();
+    await supabase.from('exercises').update({ coach_note: note.trim() || null }).eq('id', exerciseId);
+  }, []);
+
+  return { getLastSession, createWorkout, addExerciseToWorkout, reorderExercisesDB, saveSet, deleteSet, finishWorkout, cancelWorkout, checkPR, getUserExercises, updateExerciseNote };
 }

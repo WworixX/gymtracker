@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { best1RM } from '@/lib/utils';
 import type { Exercise } from '@/types';
 
 interface ProgressPoint {
@@ -9,6 +10,7 @@ interface ProgressPoint {
   maxWeight: number;
   totalVolume: number;
   sets: number;
+  e1rm: number;
 }
 
 type TimeRange = '1m' | '3m' | '6m' | 'all';
@@ -41,28 +43,22 @@ export function useProgress(exerciseId: string | null, range: TimeRange) {
         .gte('workout.started_at', cutoff.toISOString())
         .order('workout.started_at', { ascending: true });
 
-      const pointsByDate = new Map<string, ProgressPoint>();
+      // Un point par séance (et non par jour) — sinon plusieurs séances le même
+      // jour s'effondrent en un seul point et la courbe paraît vide.
+      const pts: ProgressPoint[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       for (const we of (weData ?? []) as any[]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const workout = (Array.isArray(we.workout) ? we.workout[0] : we.workout) as { started_at: string } | null;
         if (!workout) continue;
-        const date = workout.started_at.split('T')[0];
         const sets = (we.sets ?? []) as Array<{ weight: number; reps: number }>;
+        if (!sets.length) continue;
         const maxWeight = sets.reduce((m, s) => Math.max(m, s.weight), 0);
         const totalVolume = sets.reduce((acc, s) => acc + s.weight * s.reps, 0);
-        const existing = pointsByDate.get(date);
-        if (!existing || maxWeight > existing.maxWeight) {
-          pointsByDate.set(date, {
-            date,
-            maxWeight,
-            totalVolume: (existing?.totalVolume ?? 0) + totalVolume,
-            sets: (existing?.sets ?? 0) + sets.length,
-          });
-        }
+        pts.push({ date: workout.started_at, maxWeight, totalVolume, sets: sets.length, e1rm: best1RM(sets) });
       }
+      pts.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      const pts = [...pointsByDate.values()];
       const bestPr = pts.reduce<{ weight: number; date: string } | null>(
         (best, p) => (!best || p.maxWeight > best.weight ? { weight: p.maxWeight, date: p.date } : best),
         null

@@ -2,7 +2,25 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { WeightLog, Measurement, MacroLog } from '@/types';
+import type { WeightLog, Measurement, MacroLog, Profile } from '@/types';
+
+export function useProfile() {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      setProfile((data ?? null) as Profile | null);
+      setLoading(false);
+    })();
+  }, []);
+
+  return { profile, loading };
+}
 
 export function useWeightLogs(limit = 30) {
   const [logs, setLogs] = useState<WeightLog[]>([]);

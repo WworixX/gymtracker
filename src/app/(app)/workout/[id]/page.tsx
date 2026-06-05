@@ -190,7 +190,7 @@ export default function WorkoutPage({ params }: { params: { id: string } }) {
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setFinishModalOpen(false)} fullWidth>Continuer</Button>
-            <Button onClick={handleFinish} loading={finishing} fullWidth className="bg-success text-bg-base hover:bg-success/90">Terminer</Button>
+            <Button onClick={handleFinish} loading={finishing} fullWidth>Terminer</Button>
           </div>
         </div>
       </Modal>

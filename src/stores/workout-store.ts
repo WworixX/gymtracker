@@ -60,6 +60,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
             notes: '',
             orderIndex: state.activeWorkout.exercises.length,
             lastSession: last?.best ?? null,
+            lastSets: last?.sets ?? null,
           };
           return { activeWorkout: { ...state.activeWorkout, exercises: [...state.activeWorkout.exercises, newEx] } };
         }),

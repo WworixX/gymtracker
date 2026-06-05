@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/providers/ToastProvider';
+import { TrainingTypeField } from '@/components/features/exercises/TrainingTypeField';
 import { MUSCLE_GROUPS } from '@/types';
 import type { Exercise } from '@/types';
 
@@ -16,6 +17,7 @@ const schema = z.object({
   name: z.string().min(2, 'Nom requis'),
   muscle_group: z.string().min(1, 'Requis'),
   rest_seconds: z.number().int().min(10).max(600),
+  training_type: z.enum(['force', 'hypertrophy']),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -31,7 +33,7 @@ export function CreateExerciseModal({ open, onClose, onCreated }: CreateExercise
   const { toast } = useToast();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { rest_seconds: 90 },
+    defaultValues: { rest_seconds: 90, training_type: 'hypertrophy' },
   });
 
   const onSubmit = async (values: FormData) => {
@@ -66,6 +68,7 @@ export function CreateExerciseModal({ open, onClose, onCreated }: CreateExercise
           {errors.muscle_group && <p className="text-xs text-danger">{errors.muscle_group.message}</p>}
         </div>
         <Input label="Repos (secondes)" type="number" suffix="s" {...register('rest_seconds', { valueAsNumber: true })} error={errors.rest_seconds?.message} />
+        <TrainingTypeField field={register('training_type')} />
         {error && <p className="text-xs text-danger font-mono bg-danger/10 border border-danger/20 rounded-[10px] px-3 py-2">{error}</p>}
         <Button type="submit" loading={saving} fullWidth>Créer l&apos;exercice</Button>
       </form>

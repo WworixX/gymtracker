@@ -37,6 +37,54 @@ export function best1RM(sets: Array<{ weight: number; reps: number }>): number {
   return sets.reduce((max, s) => Math.max(max, estimate1RM(s.weight, s.reps)), 0);
 }
 
+/**
+ * Surcharge progressive : compare une série à la même série de la dernière séance.
+ * Métrique = 1RM estimé (gère poids↑/reps↓ équitablement).
+ * Retourne null si pas de référence (1re fois, série en plus) → aucun jugement.
+ */
+export function getSetTrend(
+  current: { weight: number; reps: number },
+  previous: { weight: number; reps: number } | null | undefined
+): 'up' | 'equal' | 'down' | null {
+  if (!previous || previous.weight <= 0 || previous.reps <= 0) return null;
+  if (current.weight <= 0 || current.reps <= 0) return null;
+  const cur = estimate1RM(current.weight, current.reps);
+  const prev = estimate1RM(previous.weight, previous.reps);
+  if (cur > prev) return 'up';
+  if (cur < prev) return 'down';
+  return 'equal';
+}
+
+/** Lundi 00:00 de la semaine contenant `date` (semaine ISO lundi→dimanche). */
+export function startOfISOWeek(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0 = dimanche
+  const diff = day === 0 ? 6 : day - 1; // recule jusqu'au lundi
+  d.setDate(d.getDate() - diff);
+  return d;
+}
+
+/**
+ * Pente d'une régression linéaire (moindres carrés) exprimée en unité/semaine.
+ * points : { t: timestamp ms, y: valeur }. Retourne 0 si < 2 points.
+ */
+export function linregSlopePerWeek(points: Array<{ t: number; y: number }>): number {
+  const n = points.length;
+  if (n < 2) return 0;
+  const meanT = points.reduce((a, p) => a + p.t, 0) / n;
+  const meanY = points.reduce((a, p) => a + p.y, 0) / n;
+  let num = 0;
+  let den = 0;
+  for (const p of points) {
+    num += (p.t - meanT) * (p.y - meanY);
+    den += (p.t - meanT) ** 2;
+  }
+  if (den === 0) return 0;
+  const slopePerMs = num / den;
+  return slopePerMs * 7 * 86400000; // ms → semaine
+}
+
 /** Évalue la robustesse d'un mot de passe. Score 0-4. */
 export function passwordStrength(pw: string): { score: number; label: string } {
   let score = 0;
