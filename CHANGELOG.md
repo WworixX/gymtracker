@@ -6,6 +6,9 @@ Format : [date] — description
 
 ## 2026-06-05
 
+### Itération 4 — métrique progression = indice (pas 1RM)
+- Le 1RM faisait redescendre la courbe quand le poids montait mais les reps baissaient (13×5 < 12×9), ce qui n'est pas voulu. Remplacé par **indice = poids + reps×0.1** : le poids prime (toute hausse de poids fait monter la courbe), les reps ajoutent un bonus à poids égal. Tooltip = poids×reps réel, tableau colonne "Indice", PR/% sur l'indice
+
 ### Itération 3 — progression centrée surcharge progressive
 - **Fix requête progression** : `useProgress` ordonnait sur une colonne imbriquée (`order('workout.started_at')`) → PostgREST renvoyait null → graphe toujours vide. Réécrit avec filtres/tri top-level `workouts` + embed inner (modèle dashboard)
 - **Métrique courbe = 1RM estimé de la 1re série** : on ne regarde que la 1re série (le nb de séries varie). 1RM Epley capte poids + reps → même poids avec plus de reps fait monter la courbe. Tableau : Date / Poids (S1) / Reps / 1RM. PR + % basés sur le 1RM

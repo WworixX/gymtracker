@@ -2,11 +2,10 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { formatDateShort } from '@/lib/utils';
-import { ChartTooltip } from '@/components/ui/ChartTooltip';
 
 interface ProgressChartProps {
-  data: Array<{ date: string; e1rm: number }>;
-  pr: { weight: number; date: string } | null;
+  data: Array<{ date: string; weight: number; reps: number; score: number }>;
+  pr: { score: number } | null;
 }
 
 export function ProgressChart({ data, pr }: ProgressChartProps) {
@@ -23,15 +22,24 @@ export function ProgressChart({ data, pr }: ProgressChartProps) {
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis dataKey="displayDate" tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}kg`} width={42} />
+          <YAxis tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} width={36} domain={['auto', 'auto']} />
           <Tooltip
             cursor={{ stroke: 'rgba(200,245,66,0.2)', strokeWidth: 1 }}
-            content={<ChartTooltip unit=" kg" labelKey="displayDate" />}
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const p = payload[0].payload as { weight: number; reps: number; displayDate: string };
+              return (
+                <div style={{ background: '#18181f', border: '0.5px solid rgba(200,245,66,0.2)', borderRadius: 10, padding: '8px 12px', fontFamily: 'var(--font-mono)' }}>
+                  <p style={{ color: '#c8f542', fontSize: 14, margin: 0, fontWeight: 500 }}>{p.weight} kg × {p.reps}</p>
+                  <p style={{ color: '#6f6f80', fontSize: 11, margin: '2px 0 0' }}>{p.displayDate}</p>
+                </div>
+              );
+            }}
           />
-          {pr && <ReferenceLine y={pr.weight} stroke="#c8f542" strokeDasharray="4 4" strokeOpacity={0.4} />}
+          {pr && <ReferenceLine y={pr.score} stroke="#c8f542" strokeDasharray="4 4" strokeOpacity={0.4} />}
           <Area
             type="monotone"
-            dataKey="e1rm"
+            dataKey="score"
             stroke="#c8f542"
             strokeWidth={2}
             fill="url(#progressFill)"
