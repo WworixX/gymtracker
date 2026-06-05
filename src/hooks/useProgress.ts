@@ -34,28 +34,29 @@ export function useProgress(exerciseId: string | null, range: TimeRange) {
       else if (range === '6m') cutoff.setMonth(cutoff.getMonth() - 6);
       else cutoff.setFullYear(2000);
 
-      const { data: weData } = await supabase
-        .from('workout_exercises')
-        .select(`sets (weight, reps), workout:workouts!inner (user_id, started_at, ended_at)`)
-        .eq('exercise_id', exerciseId)
-        .eq('workout.user_id', user.id)
-        .not('workout.ended_at', 'is', null)
-        .gte('workout.started_at', cutoff.toISOString())
-        .order('workout.started_at', { ascending: true });
+      // Filtres + tri au niveau top-level (workouts) — fiable. L'exercice est
+      // filtré via l'embed inner. (Filtrer/ordonner sur une table imbriquée via
+      // "workout.xxx" renvoyait null silencieusement.)
+      const { data: wData } = await supabase
+        .from('workouts')
+        .select(`started_at, workout_exercises!inner ( exercise_id, sets ( weight, reps ) )`)
+        .eq('user_id', user.id)
+        .not('ended_at', 'is', null)
+        .gte('started_at', cutoff.toISOString())
+        .eq('workout_exercises.exercise_id', exerciseId)
+        .order('started_at', { ascending: true });
 
       // Un point par séance (et non par jour) — sinon plusieurs séances le même
       // jour s'effondrent en un seul point et la courbe paraît vide.
       const pts: ProgressPoint[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      for (const we of (weData ?? []) as any[]) {
+      for (const w of (wData ?? []) as any[]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const workout = (Array.isArray(we.workout) ? we.workout[0] : we.workout) as { started_at: string } | null;
-        if (!workout) continue;
-        const sets = (we.sets ?? []) as Array<{ weight: number; reps: number }>;
+        const sets = ((w.workout_exercises ?? []) as any[]).flatMap((we) => (we.sets ?? [])) as Array<{ weight: number; reps: number }>;
         if (!sets.length) continue;
         const maxWeight = sets.reduce((m, s) => Math.max(m, s.weight), 0);
         const totalVolume = sets.reduce((acc, s) => acc + s.weight * s.reps, 0);
-        pts.push({ date: workout.started_at, maxWeight, totalVolume, sets: sets.length, e1rm: best1RM(sets) });
+        pts.push({ date: w.started_at as string, maxWeight, totalVolume, sets: sets.length, e1rm: best1RM(sets) });
       }
       pts.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
