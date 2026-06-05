@@ -26,11 +26,11 @@ export function ChartTooltip({ active, payload, unit = '', labelKey = 'date' }: 
         boxShadow: '0 8px 24px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(200,245,66,0.1)',
       }}
     >
-      <p style={{ color: '#c8f542', fontFamily: 'DM Mono, monospace', fontSize: 16, margin: 0, fontWeight: 500 }}>
+      <p style={{ color: '#c8f542', fontFamily: 'var(--font-mono)', fontSize: 16, margin: 0, fontWeight: 500 }}>
         {item.value}{unit}
       </p>
       {label != null && (
-        <p style={{ color: '#4a4a5a', fontSize: 11, margin: '2px 0 0', fontFamily: 'Outfit, sans-serif' }}>
+        <p style={{ color: '#4a4a5a', fontSize: 11, margin: '2px 0 0', fontFamily: 'var(--font-sans)' }}>
           {String(label)}
         </p>
       )}

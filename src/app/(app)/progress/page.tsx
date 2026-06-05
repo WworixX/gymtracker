@@ -13,7 +13,8 @@ import { PageTransition } from '@/components/ui/PageTransition';
 const ProgressChart = dynamic(() => import('@/components/features/progress/ProgressChart').then((m) => m.ProgressChart), { ssr: false, loading: () => <div className="h-52" /> });
 import { useProgress, useExerciseList } from '@/hooks/useProgress';
 import { formatDate, formatDateShort } from '@/lib/utils';
-import type { Exercise } from '@/types';
+import { MUSCLE_GROUPS } from '@/types';
+import type { Exercise, MuscleGroup } from '@/types';
 
 type TimeRange = '1m' | '3m' | '6m' | 'all';
 const RANGES: { label: string; value: TimeRange }[] = [
@@ -25,9 +26,12 @@ export default function ProgressPage() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [range, setRange] = useState<TimeRange>('3m');
   const [search, setSearch] = useState('');
+  const [filterMuscle, setFilterMuscle] = useState<MuscleGroup | ''>('');
   const [createOpen, setCreateOpen] = useState(false);
   const { points, pr, loading: dataLoading } = useProgress(selectedExercise?.id ?? null, range);
-  const filtered = exercises.filter((e) => e.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = exercises.filter(
+    (e) => e.name.toLowerCase().includes(search.toLowerCase()) && (!filterMuscle || e.muscle_group === filterMuscle)
+  );
 
   // Progression en % sur la période (max poids 1re → dernière séance)
   const first = points[0];
@@ -53,6 +57,12 @@ export default function ProgressPage() {
         <button onClick={() => setCreateOpen(true)} className="h-10 px-3 inline-flex items-center gap-1.5 shrink-0 bg-accent/10 border border-accent/30 rounded-lg text-accent hover:bg-accent/20 transition-colors text-sm font-sans font-medium">
           <Plus size={15} /> Nouveau
         </button>
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4">
+        <button onClick={() => setFilterMuscle('')} className={`shrink-0 text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border transition-colors ${filterMuscle === '' ? 'bg-accent/10 border-accent/30 text-accent' : 'border-border text-text-muted hover:border-border-active'}`}>Tous</button>
+        {MUSCLE_GROUPS.map((mg) => (
+          <button key={mg} onClick={() => setFilterMuscle(mg === filterMuscle ? '' : mg)} className={`shrink-0 text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border transition-colors ${filterMuscle === mg ? 'bg-accent/10 border-accent/30 text-accent' : 'border-border text-text-muted hover:border-border-active'}`}>{mg}</button>
+        ))}
       </div>
       <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
         {exLoading

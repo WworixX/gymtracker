@@ -12,7 +12,7 @@ interface ProgressChartProps {
 export function ProgressChart({ data, pr }: ProgressChartProps) {
   const chartData = data.map((d) => ({ ...d, displayDate: formatDateShort(d.date) }));
   return (
-    <div className="h-52">
+    <div className="h-52 font-mono">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
@@ -22,8 +22,8 @@ export function ProgressChart({ data, pr }: ProgressChartProps) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis dataKey="displayDate" tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}kg`} width={42} />
+          <XAxis dataKey="displayDate" tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}kg`} width={42} />
           <Tooltip
             cursor={{ stroke: 'rgba(200,245,66,0.2)', strokeWidth: 1 }}
             content={<ChartTooltip unit=" kg" labelKey="displayDate" />}

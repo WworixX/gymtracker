@@ -39,14 +39,13 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 ### Accueil (Dashboard)
 - Greeting avec avatar initiales
 - Bouton principal **"Démarrer une séance"** (accent glow, h-14)
-- Grille stats 2×2 : Poids actuel, Séances totales, Dernier volume, PRs récents
+- Grille stats 2×2 : Poids actuel, Séances totales, Dernier volume, Streak (jours consécutifs 🔥)
 - Compteurs animés via Framer Motion useSpring
 - **Poids du jour** — saisie rapide + sparkline 7j
 - **Mes programmes** — liste des templates avec bouton Lancer
 - **Dernière séance** — nom, date, exercices
 - **PRs Force** — records des exos en mode force, avec 1RM estimé Epley
-- **Cette semaine** — body map SVG (face + dos), muscles teintés selon le nb de séries de la semaine ISO (`MuscleHeatmap`)
-- **Volume par muscle** (semaine ISO lundi→dim) — barchart horizontal
+- **Cette semaine** — body map SVG (`MuscleHeatmap`, face + dos) + barres HTML séries/muscle (`MuscleSetsBars`), colorés par nb de séries de la semaine ISO (échelle `lib/muscleHeat.ts`)
 
 ### Séance active `/workout/[id]`
 - Header sticky : bouton annuler | nom séance + chrono live (DM Mono, glow lime) | bouton Terminer (rouge)
@@ -65,9 +64,12 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 - **RestTimer** : pilule flottante bas d'écran, barre progression colorée (vert→orange→rouge), chiffre glow, pulse animation, vibration navigator à 0s
 - **Pré-remplissage automatique** : quand on re-ajoute un exo, toutes les séries de la dernière séance sont recréées avec leurs vraies valeurs (pas juste la meilleure)
 - ExercisePicker modal pour ajouter exercice + création inline
+- **Calculateur de disques** (`PlatesCalculator`) : charge totale + barre → disques par côté (codés couleur)
 - Cancel/Finish modals avec confirmation
+- **Récap post-séance** : modale après Terminer — durée, exercices, séries, volume, séries battues vs dernière fois, Δ volume, confetti
 
 ### Historique
+- **Heatmap calendrier** (`ActivityCalendar`) — grille type GitHub 18 semaines, intensité lime selon nb de séances/jour
 - Liste séances paginées (20/page)
 - Carte expandable : durée, sets, volume, exercices + séries détaillées
 - **Export CSV** : toutes séances → Date/Séance/Exercice/Groupe/Série/Poids/Reps/Volume (BOM UTF-8, séparateur `;`)
@@ -75,9 +77,9 @@ Le bouton "Démarrer une séance" est sur l'Accueil, PAS dans la nav.
 ### Progression
 - Sélection exercice (recherche + filtre muscle)
 - Bouton "+ Nouveau exercice" inline
-- Graphe area chart (Recharts) : max poids par séance, range 1M/3M/6M/Tout
-- Ligne PR (referenceLine dashed)
-- Tableau historique séances
+- Graphe area chart (Recharts) : max poids **par séance** (1 point/séance, pas par jour), range 1M/3M/6M/Tout
+- Ligne PR (referenceLine dashed) + **% progression** (▲▼ 1re→dernière séance)
+- Tableau historique séances (Max / 1RM estimé / Volume / Séries)
 - Dot activeDot avec outer glow lime
 
 ### Corps
@@ -153,6 +155,8 @@ Système global `ToastProvider` (top-center, glassmorphism, auto-dismiss 3.2s). 
 - **Sons** : `lib/sound.ts` Web Audio synthétisé (pas de fichiers), toggle localStorage `peaklog-sound`. Joué au gesture de validation (l'AudioContext peut démarrer)
 - **Semaine = ISO lundi→dimanche** (`startOfISOWeek`) pour les agrégats dashboard, pas du 7j glissant
 - **Migration DB** : exécuter `supabase/migrations/2026-06-05_progressive-overload.sql` dans le SQL Editor (idempotent) pour ajouter `training_type`/`coach_note`/`goal_date` à la base existante
+- **Police des charts Recharts** : ne PAS mettre `fontFamily:'DM Mono'` littéral (ne matche pas next/font → fallback). Wrapper le chart dans `<div className="font-mono">` (héritage CSS sur les `<text>` SVG) ; pour les styles HTML (tooltips/labels) utiliser `var(--font-mono)`/`var(--font-sans)`
+- **Échelle muscles** : `lib/muscleHeat.ts` (`muscleHeatColor` + `HEAT_SCALE`) partagée par le body map et les barres séries/muscle. Seuils = séries/semaine/muscle
 
 ## Ce qui reste à faire (backlog)
 - SWR ou React Query pour cache/dedup des fetches

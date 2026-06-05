@@ -25,7 +25,7 @@ export function WeightSparkline({ logs }: { logs: WeightLog[] }) {
             dot={false}
           />
           <Tooltip
-            contentStyle={{ backgroundColor: '#18181f', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '11px', fontFamily: 'DM Mono, monospace', color: '#f2f2f4' }}
+            contentStyle={{ backgroundColor: '#18181f', border: '1px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#f2f2f4' }}
             formatter={(v: number) => [`${v} kg`, '']}
             labelFormatter={() => ''}
           />

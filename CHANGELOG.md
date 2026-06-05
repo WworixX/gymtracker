@@ -6,6 +6,18 @@ Format : [date] — description
 
 ## 2026-06-05
 
+### Itération 2 — corrections & ajouts
+- **Fix bouton "Terminer" séance** : vert `success` incohérent → bouton primary lime (style unifié)
+- **Séries par muscle (au lieu du volume kg)** : section "Cette semaine" du dashboard affiche désormais le **nombre de séries/muscle** via barres HTML (`MuscleSetsBars`) + body map, plus de barchart kg. Recharts retiré de cette section
+- **Body map — couleurs différenciées** : échelle partagée `lib/muscleHeat.ts` (gris→bleu→vert→lime→ambre→rouge selon séries/sem), légende chiffrée, réutilisée par la map et les barres
+- **Fix police des graphes** : `fontFamily:'DM Mono'`/'Outfit' littéral (ne matchait pas next/font) → wrapper `font-mono` (héritage CSS SVG) + `var(--font-*)` pour les tooltips/labels HTML. Charts progression, poids, macros, sparkline, tooltips
+- **Fix progression "pas assez de données"** : points groupés par **séance** (et non par jour) → plusieurs séances le même jour ne s'effondrent plus. Ajout **% progression** (▲▼) et colonne **1RM estimé** au tableau
+- **Récap post-séance** : modale après "Terminer" → durée, exercices, séries, volume, **séries battues vs dernière fois**, Δ volume, confetti
+- **Streak** : carte stat dashboard (jours consécutifs, 🔥)
+- **Calculateur de disques** : modale en séance (charge totale + barre → disques par côté, codés couleur)
+- **Heatmap calendrier** (Historique) : grille type GitHub 18 sem (`ActivityCalendar`), intensité selon séances/jour
+- **Filtre muscle en Progression** : chips de groupes musculaires (manquait vs brief)
+
 ### Fonctionnalités majeures (surcharge progressive & co)
 - **Feedback surcharge progressive** : à la validation d'une série, comparaison au même n° de série de la dernière séance via **1RM estimé Epley**. 3 états → flèche ↑ verte + flash + son montant (mieux), `=` neutre (égal, silencieux), flèche ↓ ambre + son grave (moins bien). `getSetTrend` dans `utils`. `lastSets` (toutes les séries de la dernière séance) ajouté à `ActiveWorkoutExercise` pour la compare série-à-série
 - **Sons synthétisés** `lib/sound.ts` : Web Audio API (zéro fichier), arpège/note + `navigator.vibrate`. Toggle on/off dans Profil (persisté localStorage `peaklog-sound`). Respecte `prefers-reduced-motion` pour les flashs

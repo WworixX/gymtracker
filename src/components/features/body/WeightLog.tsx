@@ -193,7 +193,7 @@ export function WeightLog() {
 
       {chartData.length > 1 && (
         <Card>
-          <div className="h-36">
+          <div className="h-36 font-mono">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                 <defs>
@@ -204,8 +204,8 @@ export function WeightLog() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} domain={yDomain} width={35} />
+                <XAxis dataKey="date" tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} domain={yDomain} width={35} />
                 <Tooltip content={<ChartTooltip unit=" kg" labelKey="date" />} />
                 {hasGoalLine && (
                   <ReferenceLine
@@ -213,7 +213,7 @@ export function WeightLog() {
                     stroke="#f59e0b"
                     strokeDasharray="5 4"
                     strokeWidth={1.5}
-                    label={{ value: `Objectif ${goal}kg`, position: 'insideTopRight', fill: '#f59e0b', fontSize: 10, fontFamily: 'DM Mono' }}
+                    label={{ value: `Objectif ${goal}kg`, position: 'insideTopRight', fill: '#f59e0b', fontSize: 10 }}
                   />
                 )}
                 <Area type="monotone" dataKey="weight" stroke="#c8f542" strokeWidth={2} fill="url(#weightFill)" dot={false} activeDot={{ r: 5, fill: '#c8f542', stroke: 'rgba(200,245,66,0.3)', strokeWidth: 6 }} />

@@ -12,8 +12,8 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { RecentPRs } from '@/components/features/dashboard/RecentPRs';
 
 const WeightSparkline = dynamic(() => import('@/components/features/dashboard/WeightSparkline').then((m) => m.WeightSparkline), { ssr: false, loading: () => <div className="h-14" /> });
-const VolumeChart = dynamic(() => import('@/components/features/dashboard/VolumeChart').then((m) => m.VolumeChart), { ssr: false, loading: () => <div className="h-36" /> });
 import { MuscleHeatmap } from '@/components/features/dashboard/MuscleHeatmap';
+import { MuscleSetsBars } from '@/components/features/dashboard/MuscleSetsBars';
 import { TemplatesSection } from '@/components/features/dashboard/TemplatesSection';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useWorkoutStore } from '@/stores/workout-store';
@@ -51,7 +51,7 @@ function StatCard({ label, value, unit, icon, accent }: { label: string; value: 
 }
 
 export default function DashboardPage() {
-  const { totalWorkouts, lastWorkout, recentPRs, volumeByMuscle, setsByMuscle, weeklySets, loading } = useDashboard();
+  const { streak, totalWorkouts, lastWorkout, recentPRs, setsByMuscle, weeklySets, loading } = useDashboard();
   const { startWorkout, activeWorkout } = useWorkoutStore();
   const { createWorkout } = useWorkoutActions();
   const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
@@ -152,7 +152,7 @@ export default function DashboardPage() {
           unit={lastWorkout ? 'kg' : undefined}
           icon={<TrendingUp size={16} />}
         />
-        <StatCard label="PRs récents" value={<AnimatedNumber value={recentPRs.length} />} icon={<Flame size={16} />} />
+        <StatCard label="Streak" value={<AnimatedNumber value={streak} />} unit={streak > 1 ? 'jours' : 'jour'} icon={<Flame size={16} />} accent={streak > 0} />
       </motion.div>
 
       {/* Poids du jour — saisie rapide */}
@@ -212,7 +212,7 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Charge par muscle — semaine en cours */}
+      {/* Séries par muscle — semaine en cours (body map + barres) */}
       {weeklySets > 0 && (
         <motion.div custom={6} variants={fadeUp} initial="hidden" animate="show">
           <Card>
@@ -221,16 +221,7 @@ export default function DashboardPage() {
               <span className="text-xs font-mono text-text-muted">{weeklySets} série{weeklySets > 1 ? 's' : ''}</span>
             </CardHeader>
             <MuscleHeatmap setsByMuscle={setsByMuscle} />
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Volume par muscle — semaine en cours */}
-      {Object.keys(volumeByMuscle).length > 0 && (
-        <motion.div custom={7} variants={fadeUp} initial="hidden" animate="show">
-          <Card>
-            <CardHeader><CardTitle>Volume par muscle (cette semaine)</CardTitle></CardHeader>
-            <VolumeChart data={volumeByMuscle} />
+            <div className="mt-4"><MuscleSetsBars setsByMuscle={setsByMuscle} /></div>
           </Card>
         </motion.div>
       )}

@@ -1,18 +1,10 @@
 'use client';
 
 import type { MuscleGroup } from '@/types';
+import { muscleHeatColor, HEAT_SCALE } from '@/lib/muscleHeat';
 
 // Body map : silhouette face + dos, chaque muscle teinté selon le nb de séries
-// effectuées dans la semaine ISO en cours. Échelle gris → lime → ambre (volume élevé).
-
-function fillFor(n: number): string {
-  if (n <= 0) return 'rgba(255,255,255,0.05)';
-  if (n < 5) return 'rgba(200,245,66,0.28)';
-  if (n < 10) return 'rgba(200,245,66,0.5)';
-  if (n < 15) return 'rgba(200,245,66,0.72)';
-  if (n < 20) return 'rgba(200,245,66,0.95)';
-  return '#f59e0b';
-}
+// effectuées dans la semaine ISO en cours. Échelle de couleurs distinctes.
 
 const STROKE = 'rgba(255,255,255,0.1)';
 
@@ -21,7 +13,7 @@ export function MuscleHeatmap({ setsByMuscle }: { setsByMuscle: Record<string, n
 
   // groupe coloré + tooltip
   const G = ({ mg, children }: { mg: MuscleGroup; children: React.ReactNode }) => (
-    <g fill={fillFor(get(mg))} stroke={STROKE} strokeWidth={0.5}>
+    <g fill={muscleHeatColor(get(mg))} stroke={STROKE} strokeWidth={0.5}>
       <title>{mg} — {get(mg)} série{get(mg) > 1 ? 's' : ''}</title>
       {children}
     </g>
@@ -60,13 +52,14 @@ export function MuscleHeatmap({ setsByMuscle }: { setsByMuscle: Record<string, n
         </svg>
       </div>
 
-      {/* Légende */}
-      <div className="flex items-center justify-center gap-2 text-[9px] font-mono text-text-muted">
-        <span>Moins</span>
-        {['rgba(255,255,255,0.05)', 'rgba(200,245,66,0.28)', 'rgba(200,245,66,0.5)', 'rgba(200,245,66,0.72)', 'rgba(200,245,66,0.95)', '#f59e0b'].map((c) => (
-          <span key={c} className="w-4 h-2.5 rounded-sm" style={{ background: c, border: '0.5px solid rgba(255,255,255,0.08)' }} />
+      {/* Légende — séries / semaine */}
+      <div className="flex items-center justify-center gap-3">
+        {HEAT_SCALE.map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-sm" style={{ background: color, border: '0.5px solid rgba(255,255,255,0.08)' }} />
+            <span className="text-[9px] font-mono text-text-muted">{label}</span>
+          </div>
         ))}
-        <span>Plus</span>
       </div>
     </div>
   );

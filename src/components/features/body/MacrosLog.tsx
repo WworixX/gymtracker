@@ -63,11 +63,11 @@ export function MacrosLog() {
       {chartData.length > 0 && (
         <Card>
           <p className="text-[10px] font-mono uppercase text-text-muted mb-3">7 derniers jours</p>
-          <div className="h-28">
+          <div className="h-28 font-mono">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} barSize={8}>
-                <XAxis dataKey="date" tick={{ fill: '#4a4a5a', fontSize: 11, fontFamily: 'DM Mono' }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} contentStyle={{ backgroundColor: '#18181f', border: '0.5px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '11px', fontFamily: 'DM Mono', color: '#f2f2f4', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }} formatter={(v: number, name: string) => [`${v}g`, name]} />
+                <XAxis dataKey="date" tick={{ fill: '#4a4a5a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} contentStyle={{ backgroundColor: '#18181f', border: '0.5px solid rgba(200,245,66,0.2)', borderRadius: '10px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#f2f2f4', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }} formatter={(v: number, name: string) => [`${v}g`, name]} />
                 <Bar dataKey="Protéines" fill="#22c55e" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="Glucides" fill="#f59e0b" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="Lipides" fill="#f43f5e" radius={[3, 3, 0, 0]} />

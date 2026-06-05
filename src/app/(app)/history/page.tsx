@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { useHistory } from '@/hooks/useHistory';
+import { ActivityCalendar } from '@/components/features/history/ActivityCalendar';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/providers/ToastProvider';
 import { formatDate, formatDuration, getWorkoutDuration, downloadCSV } from '@/lib/utils';
@@ -73,6 +74,12 @@ export default function HistoryPage() {
       </div>
       {loading && !items.length && <div className="flex justify-center py-8"><Spinner /></div>}
       {!loading && !items.length && <EmptyState icon={<Calendar size={40} />} title="Aucune séance" description="Tes séances terminées apparaîtront ici." />}
+      {items.length > 0 && (
+        <Card className="p-4">
+          <p className="text-[10px] font-mono uppercase text-text-muted mb-3">Activité</p>
+          <ActivityCalendar />
+        </Card>
+      )}
       <div className="flex flex-col gap-3">
         {items.map((item) => {
           const isOpen = expanded === item.id;
