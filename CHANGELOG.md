@@ -4,6 +4,13 @@ Format : [date] — description
 
 ---
 
+## 2026-06-06
+
+### Fix pré-remplissage séance — "dernière perf" = la plus ancienne
+- `getLastSession` triait sur `workout_exercises.created_at` au lieu de `workouts.started_at`. Sur des données importées (Strong), tous les `created_at` valent `now()` → égalité → Postgres renvoyait la 1re ligne insérée (= la séance la **plus ancienne**). Réécrit en partant de `workouts` (top-level) + embed inner `workout_exercises`/`sets`, tri `started_at` desc (même modèle que le fix progression). Le pré-remplissage reprend désormais la **vraie dernière séance**
+
+---
+
 ## 2026-06-05
 
 ### Itération 4 — métrique progression = indice (pas 1RM)

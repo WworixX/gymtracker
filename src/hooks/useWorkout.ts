@@ -8,17 +8,18 @@ export function useWorkoutActions() {
   const getLastSession = useCallback(async (exerciseId: string, userId: string) => {
     const supabase = createClient();
     const { data } = await supabase
-      .from('workout_exercises')
-      .select(`sets (set_number, weight, reps), workout:workouts!inner (user_id, ended_at)`)
-      .eq('exercise_id', exerciseId)
-      .eq('workout.user_id', userId)
-      .not('workout.ended_at', 'is', null)
-      .order('created_at', { ascending: false })
+      .from('workouts')
+      .select(`started_at, workout_exercises!inner (exercise_id, sets (set_number, weight, reps))`)
+      .eq('user_id', userId)
+      .eq('workout_exercises.exercise_id', exerciseId)
+      .not('ended_at', 'is', null)
+      .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!data) return null;
-    const raw = (data.sets ?? []) as Array<{ set_number: number; weight: number; reps: number }>;
+    const we = ((data as { workout_exercises?: Array<{ sets?: Array<{ set_number: number; weight: number; reps: number }> }> }).workout_exercises ?? [])[0];
+    const raw = (we?.sets ?? []) as Array<{ set_number: number; weight: number; reps: number }>;
     if (!raw.length) return null;
     // Toutes les séries de la dernière séance, dans l'ordre
     const sets = [...raw]
