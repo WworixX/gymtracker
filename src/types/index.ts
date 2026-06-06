@@ -9,6 +9,7 @@ export type MuscleGroup =
   | 'Quadriceps'
   | 'Ischio-jambiers'
   | 'Fessiers'
+  | 'Adducteurs'
   | 'Mollets'
   | 'Full Body';
 
@@ -23,6 +24,7 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
   'Quadriceps',
   'Ischio-jambiers',
   'Fessiers',
+  'Adducteurs',
   'Mollets',
   'Full Body',
 ];

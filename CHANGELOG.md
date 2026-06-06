@@ -6,6 +6,9 @@ Format : [date] — description
 
 ## 2026-06-06
 
+### Groupe musculaire "Adducteurs"
+- Ajout du groupe `Adducteurs` (manquait). Hip Adduction (machine) était assigné à `Fessiers` au lieu des adducteurs intérieurs cuisses. Polygone du body map (front, haut intérieur cuisse, mal nommé `ABDUCTORS` dans react-body-highlighter) re-mappé sur `Adducteurs`. SQL one-shot (`Strong/fix-muscle-groups.sql`) pour rebrancher l'exo en DB
+
 ### Body map anatomique (dashboard)
 - **`MuscleHeatmap` refait** : remplace les rectangles/ellipses approximatifs par une vraie silhouette anatomique (polygones par muscle, face + dos). Données SVG issues de `react-body-highlighter` (MIT, polygones eux-mêmes hérités de `react-native-body-highlighter`), mappées sur les groupes musculaires PeakLog (`Pecs/Dos/Épaules/...`) et exposées via `lib/muscleBodyData.ts`. Coloration inchangée (`muscleHeatColor`/`HEAT_SCALE`), tooltip par muscle, label "Face"/"Dos" sous chaque silhouette
 
