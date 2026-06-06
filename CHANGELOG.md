@@ -6,6 +6,9 @@ Format : [date] — description
 
 ## 2026-06-06
 
+### Fix sparkline poids dashboard — ligne plate
+- Bug : `AreaChart` sans `YAxis` explicite → Recharts utilisait baseline Y=0 → poids 76-80 sur échelle 0-80 = courbe quasi-plate. Ajout d'un `YAxis` caché avec domaine zoomé sur la plage réelle (`[min-pad, max+pad]`). Dots visibles + `isAnimationActive={false}` pour un sparkline plus lisible. Dashboard fournit 14 dernières entrées (au lieu de 7)
+
 ### Corps / Poids — range selector + dates avec année
 - **Sélecteur de période** sur l'onglet Poids : `7J / 1M / 1A / Tout`. Le graphe, les stats (moy / min / max) et la liste sont filtrés sur la période choisie (labels stats dynamiques : "Moy. 30j", "Min 1an", etc.)
 - **Liste historique** : reflète le range, badge "X entrées", troncature à 100 lignes max avec compteur des plus anciennes

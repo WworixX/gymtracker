@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const { streak, totalWorkouts, lastWorkout, recentPRs, setsByMuscle, weeklySets, loading } = useDashboard();
   const { startWorkout, activeWorkout } = useWorkoutStore();
   const { createWorkout } = useWorkoutActions();
-  const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(7);
+  const { logs: weightLogs, upsert: upsertWeight } = useWeightLogs(14);
   const { user } = useAuth();
   const { toast } = useToast();
 
