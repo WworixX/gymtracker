@@ -15,10 +15,13 @@ export function formatDate(dateStr: string): string {
 }
 
 export function formatDateShort(dateStr: string): string {
+  const d = new Date(dateStr);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
   return new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
     month: 'short',
-  }).format(new Date(dateStr));
+    ...(sameYear ? {} : { year: '2-digit' }),
+  }).format(d);
 }
 
 export function calcVolume(sets: Array<{ weight: number; reps: number }>): number {

@@ -6,6 +6,12 @@ Format : [date] — description
 
 ## 2026-06-06
 
+### Corps / Poids — range selector + dates avec année
+- **Sélecteur de période** sur l'onglet Poids : `7J / 1M / 1A / Tout`. Le graphe, les stats (moy / min / max) et la liste sont filtrés sur la période choisie (labels stats dynamiques : "Moy. 30j", "Min 1an", etc.)
+- **Liste historique** : reflète le range, badge "X entrées", troncature à 100 lignes max avec compteur des plus anciennes
+- **`formatDateShort` affiche l'année** quand la date n'est pas dans l'année courante (format `12 mai 23`). Évite que les vieux logs paraissent "récents". Impact toutes les vues qui affichent des dates courtes (progression, historique, body, macros, dashboard PRs)
+- `useWeightLogs` : limite remontée à 2000 (anciennement 30) pour permettre la vue "Tout"
+
 ### Groupe musculaire "Adducteurs"
 - Ajout du groupe `Adducteurs` (manquait). Hip Adduction (machine) était assigné à `Fessiers` au lieu des adducteurs intérieurs cuisses. Polygone du body map (front, haut intérieur cuisse, mal nommé `ABDUCTORS` dans react-body-highlighter) re-mappé sur `Adducteurs`. SQL one-shot (`Strong/fix-muscle-groups.sql`) pour rebrancher l'exo en DB
 

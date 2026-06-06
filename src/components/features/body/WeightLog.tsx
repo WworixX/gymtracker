@@ -25,10 +25,19 @@ function signed(n: number): string {
   return `${n > 0 ? '+' : ''}${n.toFixed(2)}`;
 }
 
+type WeightRange = '7d' | '30d' | '365d' | 'all';
+const RANGES: { label: string; value: WeightRange; days: number | null }[] = [
+  { label: '7J', value: '7d', days: 7 },
+  { label: '1M', value: '30d', days: 30 },
+  { label: '1A', value: '365d', days: 365 },
+  { label: 'Tout', value: 'all', days: null },
+];
+
 export function WeightLog() {
-  const { logs, loading, upsert, remove } = useWeightLogs(30);
+  const { logs, loading, upsert, remove } = useWeightLogs(2000);
   const { profile } = useProfile();
   const [showForm, setShowForm] = useState(false);
+  const [range, setRange] = useState<WeightRange>('30d');
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { date: new Date().toISOString().split('T')[0] },
@@ -40,12 +49,19 @@ export function WeightLog() {
     setShowForm(false);
   };
 
-  const chartData = [...logs].reverse().map((l) => ({ date: formatDateShort(l.logged_at), weight: l.weight }));
-  const latest = logs[0];
-  const week = logs.slice(0, 7);
-  const avg = week.length ? week.reduce((a, l) => a + l.weight, 0) / week.length : 0;
-  const min = week.length ? Math.min(...week.map((l) => l.weight)) : 0;
-  const max = week.length ? Math.max(...week.map((l) => l.weight)) : 0;
+  // Filtre par période (logs sont déjà triés desc par logged_at)
+  const rangeDays = RANGES.find((r) => r.value === range)?.days ?? null;
+  const cutoff = rangeDays != null ? Date.now() - rangeDays * 86400000 : null;
+  const rangedLogs = cutoff == null ? logs : logs.filter((l) => new Date(l.logged_at).getTime() >= cutoff);
+
+  const chartData = [...rangedLogs].reverse().map((l) => ({ date: formatDateShort(l.logged_at), weight: l.weight }));
+  const latest = logs[0]; // toujours le plus récent absolu
+  const stats = rangedLogs.length ? {
+    avg: rangedLogs.reduce((a, l) => a + l.weight, 0) / rangedLogs.length,
+    min: Math.min(...rangedLogs.map((l) => l.weight)),
+    max: Math.max(...rangedLogs.map((l) => l.weight)),
+  } : null;
+  const statLabel = range === '7d' ? '7j' : range === '30d' ? '30j' : range === '365d' ? '1an' : 'tout';
 
   // --- Trajectoire vers l'objectif ---
   const current = latest?.weight ?? profile?.current_weight ?? null;
@@ -123,19 +139,32 @@ export function WeightLog() {
   return (
     <div className="flex flex-col gap-4">
       {latest && (
-        <div className="flex gap-2">
-          {[
-            { label: 'Actuel', value: `${latest.weight}kg` },
-            { label: 'Moy. 7j', value: avg ? `${avg.toFixed(1)}kg` : '—' },
-            { label: 'Min', value: min ? `${min}kg` : '—' },
-            { label: 'Max', value: max ? `${max}kg` : '—' },
-          ].map(({ label, value }) => (
-            <Card key={label} className="flex-1 p-3">
-              <p className="text-[10px] font-mono uppercase text-text-muted mb-1">{label}</p>
-              <p className="font-mono text-base font-bold text-accent">{value}</p>
-            </Card>
-          ))}
-        </div>
+        <>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {RANGES.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setRange(r.value)}
+                className={`shrink-0 text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded border transition-colors ${range === r.value ? 'bg-accent/10 border-accent/30 text-accent' : 'border-border text-text-muted hover:border-border-active'}`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {[
+              { label: 'Actuel', value: `${latest.weight}kg` },
+              { label: `Moy. ${statLabel}`, value: stats ? `${stats.avg.toFixed(1)}kg` : '—' },
+              { label: `Min ${statLabel}`, value: stats ? `${stats.min}kg` : '—' },
+              { label: `Max ${statLabel}`, value: stats ? `${stats.max}kg` : '—' },
+            ].map(({ label, value }) => (
+              <Card key={label} className="flex-1 p-3">
+                <p className="text-[10px] font-mono uppercase text-text-muted mb-1">{label}</p>
+                <p className="font-mono text-base font-bold text-accent">{value}</p>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Trajectoire objectif */}
@@ -238,13 +267,17 @@ export function WeightLog() {
         <Button variant="secondary" onClick={() => setShowForm(true)} className="w-full"><Plus size={14} /> Ajouter un poids</Button>
       )}
       <div className="flex flex-col gap-2">
-        {logs.map((l) => (
+        <p className="text-[10px] font-mono uppercase text-text-muted">Historique · {rangedLogs.length} entrée{rangedLogs.length > 1 ? 's' : ''}</p>
+        {rangedLogs.slice(0, 100).map((l) => (
           <div key={l.id} className="flex items-center justify-between px-3 py-2 bg-bg-surface border border-border rounded-lg">
             <span className="text-xs font-mono text-text-secondary">{formatDateShort(l.logged_at)}</span>
             <span className="font-mono text-sm text-text-primary">{l.weight} kg</span>
             <button onClick={() => remove(l.id)} className="text-text-muted hover:text-danger transition-colors"><Trash2 size={13} /></button>
           </div>
         ))}
+        {rangedLogs.length > 100 && (
+          <p className="text-[10px] font-mono text-text-muted text-center pt-1">+ {rangedLogs.length - 100} entrée(s) plus anciennes</p>
+        )}
       </div>
     </div>
   );
