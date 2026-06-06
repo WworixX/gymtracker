@@ -6,6 +6,9 @@ Format : [date] — description
 
 ## 2026-06-06
 
+### Body map anatomique (dashboard)
+- **`MuscleHeatmap` refait** : remplace les rectangles/ellipses approximatifs par une vraie silhouette anatomique (polygones par muscle, face + dos). Données SVG issues de `react-body-highlighter` (MIT, polygones eux-mêmes hérités de `react-native-body-highlighter`), mappées sur les groupes musculaires PeakLog (`Pecs/Dos/Épaules/...`) et exposées via `lib/muscleBodyData.ts`. Coloration inchangée (`muscleHeatColor`/`HEAT_SCALE`), tooltip par muscle, label "Face"/"Dos" sous chaque silhouette
+
 ### Fix pré-remplissage séance — "dernière perf" = la plus ancienne
 - `getLastSession` triait sur `workout_exercises.created_at` au lieu de `workouts.started_at`. Sur des données importées (Strong), tous les `created_at` valent `now()` → égalité → Postgres renvoyait la 1re ligne insérée (= la séance la **plus ancienne**). Réécrit en partant de `workouts` (top-level) + embed inner `workout_exercises`/`sets`, tri `started_at` desc (même modèle que le fix progression). Le pré-remplissage reprend désormais la **vraie dernière séance**
 
